@@ -1,0 +1,47 @@
+# Build artifacts
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.lib
+build/
+dist/
+bin/
+obj/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Packed/cooked game content & binaries (keep on disk, never version)
+Tyr_Playtest/
+*.ucas
+*.utoc
+*.pak
+*.mp4
+*.sig
+*.ttf
+*.bmp
+*.bin
+*.pem
+*.ini
+*.cur
+*.tps
