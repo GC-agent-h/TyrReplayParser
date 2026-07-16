@@ -218,16 +218,35 @@ files, from both checkpoint and delta data.
   TyrReplay 3,4,5,6 read batch_count=16467 (>8192) at offset 0 → need fragment reassembly or
   a different envelope (checkpoint/initial-snapshot variant). **Frames 1+ of ALL files** need
   fragment reassembly (the replay stitches Iris stream fragments across packets via a
-  partial/continuation mechanism) — the merge of frame N's packets does not yield a valid
-  envelope yet.
+  - Per-packet Oodle: ruled OUT at container level AND per-packet (all 10 files' frame-0 packets
+    are raw, not Oodle/zlib) — PROJECT_INFO's "Oodle per-packet" does not apply to this dataset.
 
-**Remaining (Phase 4.x / Phase 5):**
-- Fragment reassembly for frames 1+ and the 4 outlier files (3-6). The legacy `bPartial` bunch
-  reassembly or a replay-specific fragment tracker is the likely mechanism.
-- Per-object STATE decode (changemask + property values) requires the game's
-  `FReplicationProtocol` descriptors — available in the discovered TYR SDK dump
-  (`5.6.0-31351+++Tyr+release-Tyr_OLD/`: StructsInfo.json / ClassesInfo.json / Mappings).
-  That is Phase 5 work.
-- Per-packet Oodle: ruled OUT at container level AND per-packet (all 10 files' frame-0 packets
-  are raw, not Oodle/zlib) — PROJECT_INFO's "Oodle per-packet" does not apply to this dataset.
+  ### Phase 5 — ✅ DONE (object identity & state descriptors, all 10 files)
+
+  - `phase5/object_identity.py`: recovers the `FNetFieldExportGroup` table from each replay's
+    first-frame export section (format: `SerializeIntPacked(PathNameIndex);
+    SerializeIntPacked(WasExported); if WasExported: FString PathName;
+    SerializeIntPacked(NumExportsInGroup); FNetFieldExport <<`). Each group = one replicated
+    class with `NumExportsInGroup` = the Iris **changemask bit-count** (replicated field count).
+  - **Validation (ad-hoc, exit 0, all 10 files):** groups recovered = 106..314 (longer recordings
+    see more classes). Exported classes per file = 15..30. `nec` (replicated field count) ranges
+    1..1947. Real class→field mappings confirmed: `WorldSettings`(22, WorldGravityZ),
+    `BP_CaptureZone_C`(21), `BP_BasicSpawnWall_C`(16, bHidden), `NetworkGameplayTagNodeIndex`
+    (1947 tag fields, first_field e.g. `Gameplay.Vehicle.CanOpener`). Native classes cross-validate
+    against the TYR SDK dump `ClassesInfo.json` (7373 classes): `WorldSettings`, `TyrMiniMapComponent`,
+    `BP_LobbyPlayerRecord_C` resolve. Game-specific blueprints (`BP_CaptureZone_C`, `Map_*_C`) are
+    cooked assets not in the native SDK dump — expected, not a failure.
+  - **Note on the SDK dump:** it contains C++ class memory layouts (ClassesInfo/Structs/Offsets) but
+    NOT Iris `FReplicationProtocol` descriptors (changemask bit widths / replicated-property ordering
+    per property). Those come from the replay's own export table (above), which is sufficient for
+    object identity and changemask structure. Full per-property VALUE decode (Phase 6) needs the
+    property serialization logic + the export group's per-field metadata (type/checksum), which the
+    `FNetFieldExport` blob carries (CompatibleChecksum + ExportName) — enough to drive typed decode.
+
+  **Remaining (Phase 4.x / Phase 6):**
+  - Fragment reassembly for frames 1+ and the 4 outlier files (3-6). The legacy `bPartial` bunch
+    reassembly or a replay-specific fragment tracker is the likely mechanism.
+  - Phase 6: pick one class (e.g. `BP_CaptureZone_C` or `WorldSettings`), read its actual replicated
+    property VALUES from the changemask-selected bits using UE replication serialization
+    (`FReplicationProtocolOperations::DeserializeWithMask`), validated across all 10 files.
 
