@@ -45,3 +45,5 @@ Tyr_Playtest/
 *.ini
 *.cur
 *.tps
+
+phase4/__pycache__/

@@ -194,11 +194,40 @@ files, from both checkpoint and delta data.
   [external data][game-specific if flag][packets][EndCount]. Packets = [int32 Count]
   [Count bytes], Count==0 terminates.
 
-### Phase 4 — IN PROGRESS (Iris bitstream reader)
-- `parse_frame` returns per-frame packet byte buffers (`pkts` list). Phase 4 = parse each
-  packet's bytes as Iris replication data (FBitReader over the packet buffer) to extract
-  actor/property state. NOTE: packet PAYLOADS (the replicated bunch data) ARE bit-serialized
-  at the Iris/bunch level — that is the genuine bit-packed layer, distinct from frame framing.
-- `phase3/bit_reader.py` has a BitReader stub (LSB-first SerializeIntPacked) for this.
-- Per-packet Oodle decompression still pending (PROJECT_INFO: Oodle per-packet).
+### Phase 4 — ✅ CORE DONE (BitReader + Iris envelope + frame-0 batch walker, 6/10 files)
+
+**Key findings (reverse-engineered from UE 5.6.1 source):**
+- The replay stores the Iris `FReplicationReader::Read` stream DIRECTLY per frame. There is
+  NO UE packet-info header and NO legacy UNetConnection bunch header in front of it (legacy
+  bunch parser proved to NOT tile — all header-combo brute-forces failed).
+- Packets within a frame are FRAGMENTS of one merged Iris stream (no individual packet tiles;
+  frame 0's first packet has count=83 but only 20 bytes → fragment). Frame 0 of 6/10 files
+  stitches cleanly into one stream with `ObjectBatchCount=83` and 83 batch headers.
+- `phase4/bitstream.py`: faithful LSB-first `FBitReader` (matches UE semantics). **Bit-exact
+  verified** via round-trip (mirror BitWriter → BitReader) for read_int, read_int_packed
+  (0/106/113), read_int(15), raw bits, consuming exactly all bits. Fixed a real bug:
+  read_int_packed/read_int_packed64 MUST read bit-by-bit (not byte-aligned) or they misalign
+  after any non-byte-aligned read.
+- `phase4/iris_reader.py`: Iris envelope + batch walker. Envelope = `[16-bit ObjectBatchCount]
+  [optional 16-bit destroyed-count + packed64 handles] [batches...]`. Each batch =
+  `[bIsDestruction(1)][if not: NetRefHandleId(packed64)][BatchSize=ReadBits(8)][bHasOwnerData]
+  [bHasExports]` then state/export data (BatchSize-delimited). `NumBitsUsedForBatchSize=8`
+  (not 13 — measured). The BatchSize lets batches tile WITHOUT protocol descriptors.
+- **Validation (ad-hoc, exit 0):** frame-0 Iris envelope tiles for 6/10 files (TyrReplay
+  1,2,7,8,9,10): count=83, 83 batches walked, batch_size sane (0..255), real handles.
+  TyrReplay 3,4,5,6 read batch_count=16467 (>8192) at offset 0 → need fragment reassembly or
+  a different envelope (checkpoint/initial-snapshot variant). **Frames 1+ of ALL files** need
+  fragment reassembly (the replay stitches Iris stream fragments across packets via a
+  partial/continuation mechanism) — the merge of frame N's packets does not yield a valid
+  envelope yet.
+
+**Remaining (Phase 4.x / Phase 5):**
+- Fragment reassembly for frames 1+ and the 4 outlier files (3-6). The legacy `bPartial` bunch
+  reassembly or a replay-specific fragment tracker is the likely mechanism.
+- Per-object STATE decode (changemask + property values) requires the game's
+  `FReplicationProtocol` descriptors — available in the discovered TYR SDK dump
+  (`5.6.0-31351+++Tyr+release-Tyr_OLD/`: StructsInfo.json / ClassesInfo.json / Mappings).
+  That is Phase 5 work.
+- Per-packet Oodle: ruled OUT at container level AND per-packet (all 10 files' frame-0 packets
+  are raw, not Oodle/zlib) — PROJECT_INFO's "Oodle per-packet" does not apply to this dataset.
 

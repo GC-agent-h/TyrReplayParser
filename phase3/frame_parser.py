@@ -176,7 +176,7 @@ def parse_frame(r, sf, gsf, order='EG', export_start=None):
             r.o += skip  # skip FDemoFrameDataMap (length == skip)
     pkts = r.packet_stream(sf)
     if r.err: return None, False
-    return {'level':li,'time':ts,'packets':len(pkts),'start':start}, True
+    return {'level':li,'time':ts,'packets':pkts,'start':start}, True
 
 def parse_replaydata(payload, sf=None, gsf=None, order=None, frame0_export_starts=(0x08,0x10,0x18)):
     """Parse a full ReplayData chunk payload into a list of frames.
