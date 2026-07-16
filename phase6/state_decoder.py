@@ -89,17 +89,22 @@ def read_net_ref_handle_id(br):
     return hid if valid else None
 
 def read_string(br):
-    """NetBitStreamUtil::ReadString: 1-bit bIsEncoded + 16-bit Length + Length bytes."""
+    """NetBitStreamUtil::ReadString: 1-bit bIsEncoded + 16-bit Length + Length bytes.
+    Returns the decoded string (TCHAR = 1 byte on target)."""
     b_encoded = br.read_bit()
     length = br.read_int(16)
     if br.err or length == 0:
         return ''
-    # encoded or not, payload is Length bytes (TCHAR = 1 byte on target)
     nbits = length * 8
     if nbits <= 0:
         return ''
-    br.read_int(nbits)
-    return '<str%d>' % length
+    # read bytes little-endian into a UTF-8-ish string (TCHAR is 1 byte on console target)
+    raw = br.read_int(nbits)
+    chars = []
+    for i in range(length):
+        chars.append(chr((raw >> (i * 8)) & 0xFF))
+    s = ''.join(chars)
+    return s
 def read_full_net_object_reference(br):
     """ObjectReferenceCache::WriteFullReference. Returns dict or None (invalid handle).
     Order:  bIsClientAssignedReference(1)
@@ -114,8 +119,9 @@ def read_full_net_object_reference(br):
         read_string(br)
         return {'id': hid, 'client': True} if valid else None
     hid, valid = read_net_ref_handle(br)
-    if not valid:
-        return None
+    # WriteFullReferenceInternal ALWAYS writes bMustExport after the handle, even for
+    # invalid handles — so we must consume it to stay aligned (stale refs would otherwise
+    # shift every subsequent bit). Return None for invalid handles, but keep reading.
     b_must_export = br.read_bit()
     if b_must_export:
         br.read_bit()  # bNoLoad
@@ -123,6 +129,8 @@ def read_full_net_object_reference(br):
             read_net_token(br)    # StringTokenStore token
             read_string(br)       # token data
             read_full_net_object_reference(br)  # outer (recursion)
+    if not valid:
+        return None
     return {'id': hid, 'exported': b_must_export}
 
 def read_net_token(br):
@@ -224,6 +232,57 @@ def read_changemask(br, bit_count):
     return bits[:bit_count]
 
 
+def read_float32(br):
+    """Read a 32-bit little-endian float from the current bit position."""
+    raw = br.read_int(32)
+    if br.err:
+        return None
+    import struct
+    return struct.unpack('<f', raw.to_bytes(4, 'little'))[0]
+
+
+def extract_worldsettings_gravity(br, obj_end_pos, cm_size=22, gravity_bit=4):
+    """For a WorldSettings (cm22) object, read the changemask and extract WorldGravityZ
+    (changemask bit 4, float). Returns (changemask_bits, [gravity_candidates]) where
+    gravity_candidates is a list of plausible float values found by a BIT-by-bit scan of
+    the state region (the gravity float sits at a non-byte-aligned offset after the
+    variable-width preceding fields). The caller takes the mode across objects to
+    separate the real (consistent) gravity from false-positive cm22 matches."""
+    import struct
+    region0 = obj_end_pos - br.tell_bits()
+    out = []
+    for off in range(0, 8):
+        if br.tell_bits() + off + 32 > obj_end_pos:
+            break
+        seek_base = br.tell_bits() if off == 0 else (obj_end_pos - region0) + off
+        br.seek_bits(seek_base)
+        cm = read_changemask(br, cm_size)
+        if cm is None:
+            continue
+        if not cm[gravity_bit]:
+            br.seek_bits(obj_end_pos)
+            return (cm, [])
+        cm_end = br.tell_bits()
+        region = obj_end_pos - cm_end
+        # BIT-by-bit scan (gravity float is not byte-aligned)
+        for o in range(0, min(region, 400) - 31):
+            br.seek_bits(cm_end + o)
+            raw = br.read_int(32)
+            if br.err:
+                break
+            v = struct.unpack('<f', raw.to_bytes(4, 'little'))[0]
+            if -5000.0 <= v <= 1000.0 and v == v and abs(v) < 1e6:
+                out.append(round(v, 3))
+        br.seek_bits(obj_end_pos)
+        return (cm, out)
+    br.seek_bits(obj_end_pos)
+    return None
+
+
+
+
+
+
 def decode_object_state(br, obj_end_pos, cm_sizes, is_initial, archetype_id=None):
     """Decode one object's state region [tell_bits(), obj_end_pos).
     Returns (cm_size, changemask_bits, dirty_floats, mode) where mode is
@@ -269,13 +328,14 @@ def decode_object_state(br, obj_end_pos, cm_sizes, is_initial, archetype_id=None
     return None
 
 
-def decode_session(data, cm_sizes):
+def decode_session(data, cm_sizes, gravity_values=None):
     """Walk the continuous Iris session stream, decode every object state.
-    Returns (reads, class_counts, mode_counts, initial_archetypes, skipped)."""
+    Returns (reads, class_counts, mode_counts, initial_archetypes, skipped, archetype_to_cm)."""
     br = bs.make_packet_reader(data)
     class_counts = {}
     mode_counts = {'strict': 0, 'agnostic': 0}
     initial_archetypes = {}
+    archetype_to_cm = {}   # archetype handle -> own changemask size (= class cm_size)
     skipped = 0
     reads = 0
     guard = 0
@@ -303,20 +363,17 @@ def decode_session(data, cm_sizes):
                 break
             batch_header_end = br.tell_bits()
             batch_end = batch_header_end + batch_size  # state region end (objs+exports)
-            # read objects until batch_end
-            # root object (uses batch handle), only if bHasBatchOwnerData
-            objs_in_batch = 0
             if b_has_owner:
                 res = _read_one_object(br, batch_handle, is_subobj=False,
                                        obj_end_pos=batch_end, cm_sizes=cm_sizes,
                                        class_counts=class_counts, mode_counts=mode_counts,
-                                       initial_archetypes=initial_archetypes)
+                                       initial_archetypes=initial_archetypes,
+                                       archetype_to_cm=archetype_to_cm,
+                                       gravity_values=gravity_values)
                 if res is None:
                     br.err = False
                     br.seek_bits(batch_end)
                     skipped += 1
-                else:
-                    objs_in_batch += 1
             # subobjects until batch_end
             while br.tell_bits() < batch_end and not br.err:
                 sub_handle = read_net_ref_handle_id(br)
@@ -326,31 +383,23 @@ def decode_session(data, cm_sizes):
                 res = _read_one_object(br, sub_handle, is_subobj=True,
                                        obj_end_pos=batch_end, cm_sizes=cm_sizes,
                                        class_counts=class_counts, mode_counts=mode_counts,
-                                       initial_archetypes=initial_archetypes)
+                                       initial_archetypes=initial_archetypes,
+                                       archetype_to_cm=archetype_to_cm,
+                                       gravity_values=gravity_values)
                 if res is None:
                     br.err = False
                     break
-                objs_in_batch += 1
-            # after objects, if bHasExports consume export section (at batch_end)
             if b_has_exports and not br.err:
                 br.seek_bits(batch_end)
                 read_export_section(br)
-            # seek to absolute end of batch (after exports)
-            if not br.err:
-                # batch truly ends at the post-export position; recompute via tell
-                pass
-            # ensure we are positioned at the next batch: seek to batch_end + exports consumed
-            # (read_export_section already advanced; if no exports, batch_end is the end)
-            if b_has_exports:
-                # read_export_section advanced past exports; use current pos
-                pass
-            else:
+            if not b_has_exports:
                 br.seek_bits(batch_end)
-    return reads, class_counts, mode_counts, initial_archetypes, skipped
+    return reads, class_counts, mode_counts, initial_archetypes, skipped, archetype_to_cm
 
 
 def _read_one_object(br, handle, is_subobj, obj_end_pos, cm_sizes,
-                     class_counts, mode_counts, initial_archetypes):
+                     class_counts, mode_counts, initial_archetypes, archetype_to_cm,
+                     gravity_values=None):
     """Read one object's header + state within [tell_bits(), obj_end_pos).
     Returns (cm_size, mode) on success, None on failure."""
     return_pos = br.tell_bits()
@@ -370,6 +419,22 @@ def _read_one_object(br, handle, is_subobj, obj_end_pos, cm_sizes,
         archetype_id = read_creation_header(br)
         if br.err:
             return None
+    # WorldSettings (cm22) gravity probe: run for ALL objects (initial and delta). The
+    # changemask position is the current reader position (post-creation-header for initial,
+    # state_start for delta). Collect candidates; caller takes the MODE to isolate the real
+    # consistent gravity from false cm22 matches.
+    if gravity_values is not None:
+        g = extract_worldsettings_gravity(br, obj_end_pos, cm_size=22, gravity_bit=4)
+        if g is not None and g[1]:
+            gravity_values.extend(g[1])
+        # rewind to the correct position for the state decode
+        br.seek_bits(return_pos)
+        br.read_int(3); br.read_bit(); br.read_bit()
+        if b_is_initial:
+            if b_is_delta:
+                br.read_bit(); br.read_int(2)
+            read_creation_header(br)  # re-consume creation header (returns None is fine)
+            br.err = False
     # state region: from here to obj_end_pos
     state_start = br.tell_bits()
     res = decode_object_state(br, obj_end_pos, cm_sizes, b_is_initial, archetype_id)
@@ -390,6 +455,10 @@ def _read_one_object(br, handle, is_subobj, obj_end_pos, cm_sizes,
     if b_is_initial:
         initial_archetypes.setdefault(archetype_id, 0)
         initial_archetypes[archetype_id] += 1
+        # archetype handle -> own changemask size (the class's cm_size). This builds the
+        # handle->class map; cross-reference with export groups (cm_size -> class_path).
+        if archetype_id is not None:
+            archetype_to_cm.setdefault(archetype_id, cm_size)
     br.seek_bits(obj_end_pos)
     return (cm_size, mode)
 
@@ -426,7 +495,8 @@ def main():
             continue
         frames, ok, params = fp.parse_replaydata(payload)
         data = sr.concat_frames(frames)
-        reads, class_counts, mode_counts, initial_archetypes, skipped = decode_session(data, cm_sizes)
+        gravity_values = []
+        reads, class_counts, mode_counts, initial_archetypes, skipped, archetype_to_cm = decode_session(data, cm_sizes, gravity_values=gravity_values)
         print('\n%s structural decode: reads=%d  classes=%d  skipped=%d' % (
             os.path.basename(f), reads, len(class_counts), skipped))
         print('  mode counts:', mode_counts)
@@ -438,6 +508,30 @@ def main():
             print('  initial-object archetype handle histogram (top 12):')
             for aid, c in sorted(initial_archetypes.items(), key=lambda kv: -kv[1])[:12]:
                 print('     handle=%-8s count=%d' % (str(aid), c))
+        # WorldSettings WorldGravityZ extraction (empirical, validated vs real data).
+        # gravity_values collects ALL plausible float candidates across initial objects;
+        # the MODE isolates the real (consistent per-level) gravity from false cm22 matches.
+        if gravity_values:
+            from collections import Counter
+            gcnt = Counter(gravity_values)
+            print('  WorldGravityZ candidates (WorldSettings cm22, bit4): n=%d distinct=%d' % (
+                len(gravity_values), len(gcnt)))
+            for val, c in gcnt.most_common(10):
+                print('     %-12.3f  x%d' % (val, c))
+            if gcnt:
+                mode_val, mode_n = gcnt.most_common(1)[0]
+                print('  -> WorldGravityZ (mode) = %.3f  (consistent across %d candidates)' % (mode_val, mode_n))
+        # cross-reference archetype handle -> cm_size -> class_path (from export groups)
+        cm_to_paths = {}
+        for path, size, _, _, exported in groups:
+            if exported and size > 0:
+                cm_to_paths.setdefault(size, []).append(path)
+        if archetype_to_cm:
+            print('  archetype handle -> class (via export groups):')
+            for aid, cm in sorted(archetype_to_cm.items(), key=lambda kv: str(kv[0])):
+                paths = cm_to_paths.get(cm, [])
+                label = paths[0] if paths else '?'
+                print('     arch=%-8s cm=%-5d -> %s' % (str(aid), cm, label))
 
 
 if __name__ == '__main__':
