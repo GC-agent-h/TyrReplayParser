@@ -605,7 +605,9 @@ def _read_one_object(br, handle, is_subobj, obj_end_pos, cm_sizes,
         archetype_id = read_creation_header(br)
         if br.err:
             return None
-    # state region: from here to obj_end_pos
+    # state region: changemask + dirty values start here (BEFORE decode_object_state
+    # consumes the changemask). extract_object_values re-reads the changemask at this
+    # position, so it must point at the changemask, not after it.
     state_start = br.tell_bits()
     res = decode_object_state(br, obj_end_pos, cm_sizes, b_is_initial, archetype_id)
     if res is None:

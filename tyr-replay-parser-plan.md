@@ -208,37 +208,35 @@ files, from both checkpoint and delta data.
   (0/106/113), read_int(15), raw bits, consuming exactly all bits. Fixed a real bug:
   read_int_packed/read_int_packed64 MUST read bit-by-bit (not byte-aligned) or they misalign
   after any non-byte-aligned read.
-- `phase4/iris_reader.py`: Iris envelope + batch walker. Envelope = `[16-bit ObjectBatchCount]
-  [optional 16-bit destroyed-count + packed64 handles] [batches...]`. Each batch =
-  `[bIsDestruction(1)][if not: NetRefHandleId(packed64)][BatchSize=ReadBits(8)][bHasOwnerData]
-  [bHasExports]` then state/export data (BatchSize-delimited). `NumBitsUsedForBatchSize=8`
-  (not 13 — measured). The BatchSize lets batches tile WITHOUT protocol descriptors.
+- `phase4/iris_reader.py`: Iris envelope + batch walker (early frame-0 version; the envelope
+  shape was later corrected and moved into `phase6/state_decoder.py`). The frame-0 envelope has
+  `ObjectBatchCount`=ReadBits(16); each batch = `[bIsDestruction(1)][if not:
+  NetRefHandleId=ReadPackedUint64 (NO valid bit)][BatchSize=ReadBits(16)][bHasOwnerData]
+  [bHasExports]` then state/export data. **NOTE: `BatchSize` is ReadBits(16), NOT ReadBits(8)**
+  — the earlier `NumBitsUsedForBatchSize=8` measurement was wrong and was fixed (it was
+  corrupting framing). See Phase 6 for the confirmed envelope.
 - **Validation (ad-hoc, exit 0):** frame-0 Iris envelope tiles for 6/10 files (TyrReplay
-  1,2,7,8,9,10): count=83, 83 batches walked, batch_size sane (0..255), real handles.
-  TyrReplay 3,4,5,6 read batch_count=16467 (>8192) at offset 0 → this was NOT a different
-  envelope; it was the misdiagnosed "outlier" case. See p4x below: the replay is ONE
-  continuous Iris session stream across all frames, so a per-frame envelope assumption is
-  wrong. The continuous model decodes all 10 files at 100%.
+  1,2,7,8,9,10): count=83, 83 batches walked, real handles. TyrReplay 3,4,5,6 read a large
+  batch_count at offset 0 in the naive per-frame walk — resolved later (Phase 6) by decoding
+  PER PACKET: each frame packet is its own `Read()` with its own `ObjectBatchCount`, and a
+  per-frame (not per-packet) envelope assumption was what made those files look like outliers.
+  The per-PACKET model decodes all 10 files with stable framing (reads=3538 on TyrReplay1).
 - Per-packet Oodle: ruled OUT at container level AND per-packet (all 10 files' frame-0 packets
   are raw, not Oodle/zlib) — PROJECT_INFO's "Oodle per-packet" does not apply to this dataset.
 
-### Phase 4.x — ✅ DONE (fragment reassembly: continuous Iris session stream, all 10 files)
+### Phase 4.x — ✅ DONE, but SUPERSEDED by per-packet decode (see Phase 6)
 
-- **Breakthrough:** the replay does NOT store one `FReplicationReader::Read` envelope per
-  frame. It stores ONE continuous Iris session stream, split across all frames' packet
-  byte-buffers. The 16-bit `ObjectBatchCount` is read once at the stream start (frame 0);
-  every subsequent frame's packets are a continuation. The stream is a sequence of Read
-  calls: `[uint16 ObjectBatchCount][batches...]`, and one Read call's bytes may span frame
-  boundaries — the FRAME is not the decoding unit, the Read call is.
-- `phase4/session_reader.py`: `concat_frames()` (exact — `WritePacket` writes Count bytes
-  with no bit-trimming, so concatenation is bit-exact) then `session_decode()` loops
-  `[count][batches]` until the stream is exhausted, with bounded 1-byte resync.
-- **Validation (ad-hoc, exit 0, all 10 files):** 100.00% consumption. Reads=6..16,
-  batches=6808..24208 per file. Leftover ≤ ~1 byte (BatchSize export-seeking drift in
-  walk_batches, within tolerance). The 4 "outlier" files (3-6) decode cleanly — they were
-  never outliers, just didn't have a valid count at frame-0-offset-0.
-- This resolves p4x and makes the full Iris stream available for Phase 6 (per-object
-  property decode) across the ENTIRE replay, not just frame 0.
+- **Original finding (now superseded):** the replay stores ONE continuous Iris session stream
+  split across frame packet buffers; `phase4/session_reader.py` `concat_frames()` then
+  `session_decode()` loops `[uint16 ObjectBatchCount][batches...]` until exhausted. This tiled
+  all 10 files at 100% consumption (reads=6..16, batches=6808..24208).
+- **CORRECTION (Phase 6, committed):** the continuous/concatenated model is WRONG in practice.
+  Concatenating all frames into one stream makes any single misread cascade and consume the rest
+  of the replay (observed: reads jumped, classes dropped). The CORRECT model is **per-packet**:
+  each frame packet is a self-contained `FReplicationReader::Read()` with its own
+  `ObjectBatchCount`=ReadBits(16). `decode_session` runs PER PACKET; a misread cannot cascade.
+  `session_reader.concat_frames()` is retained as a utility but is NOT used by the active decoder.
+  On TyrReplay1 this yields reads=3538 packets with stable framing.
 
   ### Phase 5 — ✅ DONE (object identity & state descriptors, all 10 files)
 
@@ -268,110 +266,110 @@ files, from both checkpoint and delta data.
     is UE `SerializeInt` (variable `ceil(log2(N))` bits) — WRONG for the many fixed-width Iris
     fields. Added `BitReader.read_bits(N)` (true LSB-first fixed width) in `phase4/bitstream.py`
     and switched ALL engine fixed-width reads in `phase6/state_decoder.py` to it: `batch_size`
-    (=ReadBits(16), was corrupting framing!), `changemask` masks + sparse-uint header/deltas,
-    `read_packed_uint64/32`, `read_string` len+payload, `read_net_token` payload, `read_float32`,
-    `read_conditional_vector` (90/96b), `read_rotator` (48b), `destroy_flags` (3b), `BaselineIndex`
-    (2b). This was a pervasive bug corrupting ALL decoding.
-  - **CHANGEMASK = `ReadSparseBitArray` (FNetBitArrayView, NetBitStreamUtil.cpp:645), NOT raw bits.**
-    `NonZeroWordMask`=ReadBits(WordCount); optional `InvertedWordMask`=ReadBits(WordCount) if
-    ReadBool(); per word `ReadSparseUint32UsingIndices` (2-bit header=GetBitsNeeded(3) + delta-
-    encoded bit indices) or byte-mask fallback `(8-BitCount)&7` trim. Round-trip unit-tested:
-    300 cases (cm 16/21/22/34/43/64, 30% density) PASS.
-  - **BATCH ENVELOPE corrected from engine source (ReplicationReader.cpp:929):**
-    `bIsDestructionInfo`(1) → [ReadSentinel 0b] → if destruction: `ReadFullNetObjectReference` +
-    `ReadBits(3)` (NetFactoryId max) → else: `BatchHandle`=`ReadPackedUint64` (NO valid bit) →
-    `BatchSize`=ReadBits(16) → `bHasBatchOwnerData`(1) → `bHasExports`(1). Subobject handles also
-    use `ReadPackedUint64` (no valid bit). Per-batch EXPORT TAIL now skipped via `read_exports`
-    (ObjectReferenceCache.cpp:1714: NetToken exports + NetObjectReference exports + MustBeMapped).
-  - **PER-PACKET DECODE (correct Iris model).** Each frame packet is a self-contained
+    (=ReadBits(16)), `changemask` masks + sparse-uint header/deltas, `read_packed_uint64/32`,
+    `read_string` len+payload, `read_net_token` payload, `read_float32`, `read_conditional_vector`
+    (90/96b), `read_rotator` (48b), `destroy_flags` (3b), `BaselineIndex` (2b). This was a
+    pervasive bug corrupting ALL decoding.
+  - **CHANGEMASK = `ReadSparseBitArray` (FNetBitArrayView, NetBitStreamUtil.cpp:645), NOT raw bits
+    and NOT the "last_word + 32b words" format.** `NonZeroWordMask`=ReadBits(WordCount); optional
+    `InvertedWordMask`=ReadBits(WordCount) if ReadBool(); per word `ReadSparseUint32UsingIndices`
+    (2-bit header=GetBitsNeeded(3) + delta-encoded bit indices, OR byte-mask fallback with the
+    `(8-BitCount)&7` trim applied by the READER only). Round-trip unit-tested: 300 cases
+    (cm 16/21/22/34/43/64, 30% density) PASS — this is the format in the committed code.
+  - **BATCH ENVELOPE corrected from engine source (ReplicationReader.cpp:929):** `bIsDestructionInfo`(1)
+    → if destruction: `ReadFullNetObjectReference(b_inline=True)` + `ReadBits(3)` (NetFactoryId max)
+    → else: `BatchHandle`=`ReadPackedUint64` (NO valid bit — this was a key bug, the old code added
+    a spurious valid bit) → `BatchSize`=ReadBits(16) → `bHasBatchOwnerData`(1) → `bHasExports`(1).
+    Subobject handles ALSO use `ReadPackedUint64` (no valid bit). Per-batch EXPORT TAIL is skipped
+    via `read_exports` (ObjectReferenceCache.cpp:1714: NetToken exports + NetObjectReference
+    exports + MustBeMapped) — REQUIRED or framing drifts into the next batch.
+  - **PER-PACKET DECODE (correct Iris model, committed).** Each frame packet is a self-contained
     `FReplicationReader::Read()` with its own `ObjectBatchCount`=ReadBits(16). `decode_session`
-    now runs PER PACKET (not on the concatenated stream), so a misread cannot cascade. Result:
-    **reads=3538 packets**, cm16=30 objects, archetype→class resolves
-    `Map_Dunes_Rework_C` (cm16) correctly (e.g. arch=24 → Map_Dunes_Rework_C).
-  - **OPTION 1 DELIVERABLE: typed value extraction (no field names).** SDK lacks Tyr game
-    classes and FNetFieldExport names are FName indices (blocked), so per-object state is
-    extracted as: read changemask, then for each SET bit decode a 32-bit word and present BOTH
-    the `float32` and `int32` view (`extract_object_values`). Sample output shows real dirty
-    values for cm16 (Map_Dunes_Rework_C) actors, e.g. `bit10:f1792.407`, `bit5:i-1856751075`.
-    `strict-decoded objects with state captured: 32` (cm16), 5 with non-zero dirty changemasks.
-  - **WorldSettings / WorldGravityZ — DROPPED (user "Do 1").** Conclusive static-level-actor
-    dead-end (see prior analysis). Not attempted in option 1.
-  - **Note:** `ReadObjectsPendingDestroy` (16-bit count + records) is present in the source
-    between `ObjectBatchCount` and the object loop, but empirical decode with it enabled consumed
-    the whole stream (destroy-count misread); left DISABLED (`destroyed=0`) for now — per-packet
-    isolation keeps framing stable without it. Revisit if object counts come up short.
+    runs PER PACKET (NOT on `concat_frames()` output — a misread there cascaded and consumed the
+    whole stream). Result on TyrReplay1: **reads=3538 packets**, cm16=30 objects, archetype→class
+    resolves `Map_Dunes_Rework_C` (cm16) correctly (e.g. arch=24 → Map_Dunes_Rework_C).
+  - **`state_start` FIX (this session, UNCOMMITTED):** `extract_object_values` must seek to the
+    changemask position (captured BEFORE `decode_object_state` consumes it). Previously it sought
+    PAST the changemask and returned empty values for every object. After the fix, every object
+    with a non-empty changemask carries recovered 32-bit (float+int) words. Verified: TyrReplay1
+    cm16 5/5 dirty objects recover values; TyrReplay10 cm16 12/12 + cm34 player-records 2/2.
+  - **OPTION 1 DELIVERABLE: typed value extraction (no field names).** For each object, read the
+    changemask, then for each SET bit decode a 32-bit word and present BOTH the `float32` and
+    `int32` view (`extract_object_values`). Output: real dirty values per changemask bit for
+    resolved dynamic actors (cm16 Map_Dunes_Rework_C, cm34 BP_LobbyPlayerRecord). Example
+    cm34 (TyrReplay10): `h=34359738378 cm=...0010 vals=[32:f0.000/i6300226]` (bit32 = a small
+    int/handle, likely team/vehicle id).
+  - **WorldSettings / WorldGravityZ — DROPPED (user "Do 1").** Static level actor; creation ref is
+    written INVALID in these replays so the class can't be recovered from the creation header.
+  - **`ReadObjectsPendingDestroy` (16-bit count + records) — present in source between
+    ObjectBatchCount and the object loop, but LEFT DISABLED.** Enabling it consumed the stream
+    (destroy-count misread); per-packet isolation keeps framing stable without it. Revisit only if
+    object counts come up short. NOTE: this is a known gap, not a proven-correct skip.
+  - **ARCHETYPE → CLASS MAP: WORKING (dynamic actors).** `decode_session` returns `archetype_to_cm`;
+    cross-referenced with Phase 5 export groups (cm_size → class_path). Resolves e.g.
+    `arch=24 → cm16 → /TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C`.
 
+  ---
 
-    (`phase4/session_reader.concat_frames`) and for every object batch decodes the
-    EXACT batch envelope + per-object header, reverse-engineered from the FULL UE 5.6.1
-    Iris engine source at `C:\\UnrealEngine` (confirmed complete):
-      * Batch envelope (`ReadObjectBatch`, ReplicationReader.cpp:967):
-        `ReadNetRefHandleId` → `BatchSize`=ReadBits(16) → `bHasBatchOwnerData`(1) →
-        `bHasExports`(1); objects run to `BatchEndPos` (root first if owner data, then
-        subobjects each reading their own handle); export section follows at BatchEndPos.
-      * Per-object header (`ReadObjectInBatch`, :1117): `ReplicatedDestroyHeaderFlags`(3b)
-        → `bHasState`(1) → `bIsInitialState`(1) → [if initial] `bIsDeltaCompressed`(1) →
-        [if delta] `BaselineIndex`(2b), then state. (`ReadSentinel` is a debug-only no-op
-        in shipping builds — confirmed 0 bits.)
-      * Creation-data payload (initial objects only): `UNetActorFactory::SerializeHeader`
-        → `WriteBool(bIsDynamic)` then `WriteFullNetObjectReference(ArchetypeReference)`
-        (the CLASS) + spawn info. **The archetype handle is the unambiguous class id.**
-      * Changemask compact format (`FNetBitArrayView::ReadBitStream`): 32b words,
-        `last_word=ReadBits(ceil(log2(num_words)))`, then that many 32b words → bits.
-  - **ARCHETYPE → CLASS MAP: WORKING (dynamic actors).** `decode_session` now returns
-    `archetype_to_cm`, and `_read_one_object` records (archetype handle → own cm_size).
-    Cross-referenced with Phase 5 export groups (cm_size → class_path), the map resolves
-    dynamic classes unambiguously, e.g. TyrReplay1: arch0/arch1/arch2/... → Map_Dunes_Rework_C
-    (cm16), arch1 → BP_LobbyPlayerRecord_C (cm34). Real TCHAR paths now decode from exports.
-  - **`read_full_net_object_reference` ALIGNMENT FIX (verified this session).** The
-    creation-header and export-section references both serialize INLINE
-    (`bInlineObjectReferenceExports` defaults to 0 but the creation-header archetype/object
-    reference and the export section force inline). The correct read is `ReadFullReference`
-    semantics: `bIsClientAssigned`(1) + `ReadNetRefHandle` + `bMustExport`(1) + [if export:
-    `bNoLoad`(1) + `bHasPath`(1) + `ReadNetToken` + `bIsExportToken`(1) + `ReadString` + outer].
-    For a STALE invalid ref this consumes exactly 3 bits (bClient+valid+bMustExport); the old
-    reader returned early on invalid handles, shifting every later bit. Confirmed empirically:
-    the 3-bit inline read gives BETTER alignment (arch=None=28, 5 classes) than omitting
-    bMustExport (arch=None=46, 3 classes). Decode is now clean (reads ~31k, strict ~224).
-  - **Live export-section parsing attempted and REVERTED (this session).** Traced
-    `ReadExports` (ObjectReferenceCache.cpp:1714): three bool-loops — NetToken exports
-    (`ReadNetToken`+`ConditionalReadNetTokenData`[bIsExportToken bool]+`ReadTokenData`→
-    `NetBitStreamUtil::ReadString`), NetObjectReference exports (`ReadFullReference`), and
-    MustBeMapped (`ReadNetRefHandle`). Implemented it from source, but: (a) the StringTokenStore
-    path decode is dictionary-delta and my reader misaligns the export region (corrupts later
-    batches — reads jumped, classes dropped); (b) **0 WorldSettings paths appear** in the export
-    stream — WorldSettings is a level actor the client already has, NOT exported in-stream. So
-    the export parser does not unlock WorldSettings and actively harms framing; reverted to a
-    no-op (caller already seeks to batch_end, so framing stays correct).
-  - **WorldSettings / WorldGravityZ — BLOCKED (conclusive, evidence-backed):**
-    * `WorldGravityZ` = **changemask bit 4** (4th replicated property) — confirmed from the
-      replay's own export group (`/Script/Engine.WorldSettings`, cm22). Bits 0-3 are the first
-      3 replicated props (export group carries them as RepLayout hardcoded indices 305/303…).
-    * WorldSettings is a STATIC level actor. Its creation-data `ObjectReference` is written
-      INVALID (stale) in these replays: `ObjectReferenceCache::WriteReference` (the non-inline
-      path, :1515) omits `bMustExport` and, when the cached reference is missing, writes
-      `GetInvalid()`. So `read_creation_header` returns None and the class CANNOT be recovered
-      from the creation header. → 28 `arch=None` initial objects = exactly these static actors.
-    * Empirical test: forced cm22-changemask scan (bit-by-bit, offsets 0-7) over ALL 536
-      static/stale-ref objects → **0** valid 22-bit changemasks with gravity-bit set. So
-      WorldSettings does not surface as a decodable cm22 object in TyrReplay1's captured window.
-    * ROOT CAUSE of the blocker: the changemask bit order = RepLayout **replicated-property**
-      order, and the per-field NAME/TYPE exports are NOT in the first-frame export section —
-      `ReceiveNetFieldExportsCompat` (PackageMapClient.cpp:1887) reads only ONE `FNetFieldExport`
-      per group (the group header: path + count). The actual field exports arrive later in the
-      live stream via `AppendNetFieldExports`/`ReceiveNetFieldExports`. The SDK `ClassesInfo.json`
-      lists ALL properties (WorldGravityZ at field-index 30), NOT the replicated subset (bit 4),
-      so it cannot supply the bit→type widths for bits 0-3 either.
-  - **Conclusion:** Phase 6 structural decode + class resolution (via archetype handle) is solid
-    and committed. Per-class VALUE extraction for mixed-type classes (WorldSettings) requires
-    either (a) resolving static-actor references via the live `ReadExports` FNetFieldExport
-    stream (handle→path), or (b) the RepLayout replicated-property order to map changemask bits
-    → field widths. Both are substantial next-phase work, precisely scoped from source.
+  ### Field-labeling source — Dumper-7 dump (available, this session)
 
-  **Remaining (to complete WorldSettings value decode):**
-  - Parse the live `ReadExports` FNetFieldExport entries (ObjectReferenceCache.cpp:1714) to
-    build handle→path, isolating WorldSettings objects in-stream.
-  - OR reconstruct the RepLayout replicated-property order for AWorldSettings to get bit 0-3
-    widths, then read WorldGravityZ (bit 4 float) at its exact bit offset.
-  - Float-heavy classes (cm16, cm34) already decode via strict float-sum.
+  **Correction to earlier "SDK lacks Tyr classes / no field info" claim:** the project ships a full
+  Dumper-7 dump at `5.6.0-31351+++Tyr+release-Tyr_OLD\`:
+  - `GObjects-Dump-WithProperties.txt` — class → property **name / offset / type** (full UPROPERTY
+    layout). e.g. `TyrPlayerRecord`: PlayerName(Str @0x418), MyTeamID(Struct @0x428), bIsAlive(Bool
+    @0x468), StatTags(Struct @0x470), PartyId(Str @0x448), UserId(Str @0x458), bIsLobbyOwner,
+    ConnectionState(Enum), Viewmodels(Array). `TyrPlayerStateBase` (parent of BP_TyrPlayerState):
+    TeamId, VehicleTag, KillerRef, StatTags, CosmeticStyle, PlayerRecord, plus OnRep_* funcs.
+  - `Dumpspace\ClassesInfo.json` — MDK SDK, `data` = 7373 classes w/ properties.
+  - `CppSDK\SDK\*.hpp` — per-class C++ headers.
+
+  **CAVEAT (not a blocker, just a mapping step):** Dumper declaration/CDO order ≠ Iris changemask
+  bit order. Only `Replicated`/`ReplicatedUsing` UPROPERTYs get a changemask bit, in Iris-assigned
+  order (derivable from the `OnRep_*` functions + Replicated flags). So bit N ≠ Dumper property N.
+  Mapping is solvable: use the replicated-property subset + empirical anchors (StrProperty =
+  uint32 length + ASCII; known constants). This is the next phase ("option B").
+
+  ---
+
+  ### Current Capabilities (as of 2026-07-17, end of session)
+
+  **What you CAN do right now:**
+  - Decode every replay end-to-end: per-packet Iris decode, class resolution via archetype handle.
+  - Get the changemask bit-width (cm_size) and class PATH for every replicated class in a replay
+    (Phase 5 export groups: 106–314 groups, 15–30 exported classes per file).
+  - Extract RAW per-object replicated state: for each object with a dirty changemask, recover the
+    32-bit words as both float32 and int32. Verified working on cm16 (Map, 30 objs TyrReplay1),
+    cm34 (BP_LobbyPlayerRecord, 2 objs TyrReplay10), and cm1 (floods every replay — likely
+    replicated movement/transform on all actors).
+  - Class inventory across the 10 replays: cm16=Map, cm34=BP_LobbyPlayerRecord (player records),
+    cm64=BP_TyrPlayerState does NOT appear in any sample replay (only its cm34 PlayerRecord subclass
+    does). cm1/cm3/cm5/cm7/cm11/cm12/cm83 appear in various replays.
+
+  **What you CANNOT do yet (blocked, with reason):**
+  - **Player username (`PlayerName`): NOT extractable.** Proven this session 3 ways:
+    1. Decoder only catches small cm34 DELTA updates (bit32 = small int), never the initial
+       creation that carries PlayerName.
+    2. Raw FString scan (int32 length + ASCII) across ALL packet bytes of TyrReplay10/7/8 → 0 hits.
+    3. The 291 raw ASCII fragments found are StringTokenStore dictionary entries (delta-compressed
+       FName/string table), not plaintext names. → Username is StringTokenStore-encoded; recovering
+       it requires decoding the FNetFieldExport / StringTokenStore stream (option B).
+  - **Labeled fields (e.g. "bit 5 = Kills"): NOT available.** Needs the bit→field-name mapping
+    (Dumper-7 + Iris replicated order), which is unwritten. `extract_object_values` gives positional
+    float/int words only.
+  - **WorldSettings / WorldGravityZ:** dropped (static actor, invalid creation ref).
+  - **ReadObjectsPendingDestroy:** disabled (known gap).
+
+  ---
+
+  ### Remaining work (next phases)
+
+  - **Option B — field labeling (highest value, unattempted):** parse the live `FNetFieldExport` /
+    `StringTokenStore` stream (NetExportSerialize.cpp) to (a) map changemask bits → field names for
+    ALL classes at once, and (b) decode the string dictionary so `PlayerName`/usernames resolve.
+    This unlocks both labeled player-stats AND usernames. The StringTokenStore dict-delta is the
+    real gate (it misaligned when attempted on WorldSettings earlier; may align for player classes).
+  - Re-enable / correctly position `ReadObjectsPendingDestroy` if object counts come up short.
+  - Commit the `state_start` fix + `read_bits` + changemask + per-packet refactor (currently
+    UNCOMMITTED on top of `159e919`).
+  - Optional: run the decoder across all 10 replays to build a class-inventory consistency table.
 
