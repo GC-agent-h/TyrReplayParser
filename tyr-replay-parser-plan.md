@@ -286,12 +286,26 @@ files, from both checkpoint and delta data.
     Cross-referenced with Phase 5 export groups (cm_size → class_path), the map resolves
     dynamic classes unambiguously, e.g. TyrReplay1: arch0/arch1/arch2/... → Map_Dunes_Rework_C
     (cm16), arch1 → BP_LobbyPlayerRecord_C (cm34). Real TCHAR paths now decode from exports.
-  - **`read_full_net_object_reference` ALIGNMENT FIX (this session).** `WriteFullReferenceInternal`
-    ALWAYS writes `bMustExport`(1) AFTER the handle — even for INVALID handles (stale refs).
-    The old reader returned early on invalid handles, shifting every later bit. Now the full
-    reference is consumed. This removed a misalignment cascade and improved decode quality
-    (reads 29,726; `arch=None` dropped 144 → 28; removed a cm22 over-matching branch that had
-    been corrupting later batches).
+  - **`read_full_net_object_reference` ALIGNMENT FIX (verified this session).** The
+    creation-header and export-section references both serialize INLINE
+    (`bInlineObjectReferenceExports` defaults to 0 but the creation-header archetype/object
+    reference and the export section force inline). The correct read is `ReadFullReference`
+    semantics: `bIsClientAssigned`(1) + `ReadNetRefHandle` + `bMustExport`(1) + [if export:
+    `bNoLoad`(1) + `bHasPath`(1) + `ReadNetToken` + `bIsExportToken`(1) + `ReadString` + outer].
+    For a STALE invalid ref this consumes exactly 3 bits (bClient+valid+bMustExport); the old
+    reader returned early on invalid handles, shifting every later bit. Confirmed empirically:
+    the 3-bit inline read gives BETTER alignment (arch=None=28, 5 classes) than omitting
+    bMustExport (arch=None=46, 3 classes). Decode is now clean (reads ~31k, strict ~224).
+  - **Live export-section parsing attempted and REVERTED (this session).** Traced
+    `ReadExports` (ObjectReferenceCache.cpp:1714): three bool-loops — NetToken exports
+    (`ReadNetToken`+`ConditionalReadNetTokenData`[bIsExportToken bool]+`ReadTokenData`→
+    `NetBitStreamUtil::ReadString`), NetObjectReference exports (`ReadFullReference`), and
+    MustBeMapped (`ReadNetRefHandle`). Implemented it from source, but: (a) the StringTokenStore
+    path decode is dictionary-delta and my reader misaligns the export region (corrupts later
+    batches — reads jumped, classes dropped); (b) **0 WorldSettings paths appear** in the export
+    stream — WorldSettings is a level actor the client already has, NOT exported in-stream. So
+    the export parser does not unlock WorldSettings and actively harms framing; reverted to a
+    no-op (caller already seeks to batch_end, so framing stays correct).
   - **WorldSettings / WorldGravityZ — BLOCKED (conclusive, evidence-backed):**
     * `WorldGravityZ` = **changemask bit 4** (4th replicated property) — confirmed from the
       replay's own export group (`/Script/Engine.WorldSettings`, cm22). Bits 0-3 are the first

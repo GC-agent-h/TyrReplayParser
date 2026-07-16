@@ -105,30 +105,42 @@ def read_string(br):
         chars.append(chr((raw >> (i * 8)) & 0xFF))
     s = ''.join(chars)
     return s
-def read_full_net_object_reference(br):
-    """ObjectReferenceCache::WriteFullReference. Returns dict or None (invalid handle).
-    Order:  bIsClientAssignedReference(1)
-              if true:  WriteNetRefHandle + StringTokenStore::WriteNetToken + token data
-              else (inline, default): WriteFullReferenceInternal =
-                  WriteNetRefHandle + bMustExport(1)
-                    if export: bNoLoad(1) + bHasPath(1) + token + outer(recursion)"""
+def read_full_net_object_reference(br, b_inline=True):
+    """ObjectReferenceCache reference read.
+
+    The creation-header reference and the export section both serialize references
+    INLINE (the export section forces FForceInlineExportScope; the creation-header
+    archetype/object reference is always written via WriteFullReferenceInternal with
+    bMustExport). So b_inline=True is the default for both. b_inline=False maps to
+    ReadReference (deferred property refs) and is unused by the current decoder.
+
+    b_inline=False (creation header / ReadReference): no bMustExport, no path.
+    b_inline=True  (export section / ReadFullReference): full inline format.
+
+    Returns dict or None (invalid handle)."""
     b_client = br.read_bit()
     if b_client:
+        # Client-assigned: handle + StringTokenStore token (+ its data inline here)
         hid, valid = read_net_ref_handle(br)
         read_net_token(br)
         read_string(br)
         return {'id': hid, 'client': True} if valid else None
     hid, valid = read_net_ref_handle(br)
-    # WriteFullReferenceInternal ALWAYS writes bMustExport after the handle, even for
-    # invalid handles — so we must consume it to stay aligned (stale refs would otherwise
-    # shift every subsequent bit). Return None for invalid handles, but keep reading.
+    if not b_inline:
+        # ReadReference: stale/invalid handle carries nothing else.
+        if not valid:
+            return None
+        return {'id': hid}
+    # b_inline=True -> ReadFullReferenceInternal
     b_must_export = br.read_bit()
+    path = None
     if b_must_export:
         br.read_bit()  # bNoLoad
         if br.read_bit():  # bHasPath
             read_net_token(br)    # StringTokenStore token
-            read_string(br)       # token data
-            read_full_net_object_reference(br)  # outer (recursion)
+            br.read_bit()         # ConditionalReadNetTokenData: bIsExportToken
+            read_string(br)       # ReadTokenData -> NetBitStreamUtil::ReadString
+            read_full_net_object_reference(br, b_inline=True)  # outer (recursion)
     if not valid:
         return None
     return {'id': hid, 'exported': b_must_export}
@@ -194,25 +206,15 @@ def read_creation_header(br):
             return ref['id']
         return None
 
-def read_export_section(br):
-    """ObjectReferenceCache::ReadExports. Consumes the export region bits (skip only).
-    Returns nothing; advances reader to end of exports."""
-    # NetToken exports
-    b_has = br.read_bit()
-    while b_has and not br.err:
-        read_net_token(br)
-        read_string(br)  # ReadTokenData (string store)
-        b_has = br.read_bit()
-    # NetObjectReference exports
-    b_has = br.read_bit()
-    while b_has and not br.err:
-        read_full_net_object_reference(br)
-        b_has = br.read_bit()
-    # ReadMustBeMappedExports: bool + loop(bool + ReadNetRefHandle)
-    b_has = br.read_bit()
-    while b_has and not br.err:
-        read_net_ref_handle(br)
-        b_has = br.read_bit()
+def read_export_section(br, handle_paths=None):
+    """ObjectReferenceCache::ReadExports (ReplicationReader.cpp:1012, after bHasExports).
+
+    Three bool-terminated loops (NetToken exports, NetObjectReference exports, MustBeMapped).
+    The caller already seeks to batch_end before calling, so this is a no-op for framing.
+    Full token/path decoding (StringTokenStore dictionary delta) is not yet implemented;
+    capturing handle->path requires replicating NetTokenStore state, which is a separate
+    deep task and does NOT surface WorldSettings (a level actor not exported in-stream)."""
+    return
 
 def read_changemask(br, bit_count):
     """Read a compact Iris changemask of `bit_count` bits. Returns list of bools."""
@@ -330,7 +332,7 @@ def decode_object_state(br, obj_end_pos, cm_sizes, is_initial, archetype_id=None
 
 def decode_session(data, cm_sizes, gravity_values=None):
     """Walk the continuous Iris session stream, decode every object state.
-    Returns (reads, class_counts, mode_counts, initial_archetypes, skipped, archetype_to_cm)."""
+    Returns (reads, class_counts, mode_counts, initial_archetypes, skipped, archetype_to_cm, handle_paths)."""
     br = bs.make_packet_reader(data)
     class_counts = {}
     mode_counts = {'strict': 0, 'agnostic': 0}
@@ -508,7 +510,7 @@ def main():
             print('  initial-object archetype handle histogram (top 12):')
             for aid, c in sorted(initial_archetypes.items(), key=lambda kv: -kv[1])[:12]:
                 print('     handle=%-8s count=%d' % (str(aid), c))
-        # WorldSettings WorldGravityZ extraction (empirical, validated vs real data).
+        # WorldSettings WorldGravityZ extraction (empirical).
         # gravity_values collects ALL plausible float candidates across initial objects;
         # the MODE isolates the real (consistent per-level) gravity from false cm22 matches.
         if gravity_values:
