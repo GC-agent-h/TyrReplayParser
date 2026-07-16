@@ -48,8 +48,3 @@ binary (`Tyr_Playtest/Tyr/Binaries/Win64/TyrClient-Win64-Shipping.exe`), and the
 2. Decompress chunks via Oodle (with zlib fallback per chunk method byte).
 3. No encryption — read header/chunks directly.
 4. Decode replication as **Iris**, with a first-packet legacy/Iris autodetect.
-
-## Recommended next step
-Scaffold a minimal replay header + chunk-table reader, confirm the per-chunk compression
-method byte, and validate Oodle decompression on one chunk before building the Iris packet
-decoder.
