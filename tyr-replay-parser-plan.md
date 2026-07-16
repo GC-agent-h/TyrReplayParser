@@ -215,11 +215,30 @@ files, from both checkpoint and delta data.
   (not 13 — measured). The BatchSize lets batches tile WITHOUT protocol descriptors.
 - **Validation (ad-hoc, exit 0):** frame-0 Iris envelope tiles for 6/10 files (TyrReplay
   1,2,7,8,9,10): count=83, 83 batches walked, batch_size sane (0..255), real handles.
-  TyrReplay 3,4,5,6 read batch_count=16467 (>8192) at offset 0 → need fragment reassembly or
-  a different envelope (checkpoint/initial-snapshot variant). **Frames 1+ of ALL files** need
-  fragment reassembly (the replay stitches Iris stream fragments across packets via a
-  - Per-packet Oodle: ruled OUT at container level AND per-packet (all 10 files' frame-0 packets
-    are raw, not Oodle/zlib) — PROJECT_INFO's "Oodle per-packet" does not apply to this dataset.
+  TyrReplay 3,4,5,6 read batch_count=16467 (>8192) at offset 0 → this was NOT a different
+  envelope; it was the misdiagnosed "outlier" case. See p4x below: the replay is ONE
+  continuous Iris session stream across all frames, so a per-frame envelope assumption is
+  wrong. The continuous model decodes all 10 files at 100%.
+- Per-packet Oodle: ruled OUT at container level AND per-packet (all 10 files' frame-0 packets
+  are raw, not Oodle/zlib) — PROJECT_INFO's "Oodle per-packet" does not apply to this dataset.
+
+### Phase 4.x — ✅ DONE (fragment reassembly: continuous Iris session stream, all 10 files)
+
+- **Breakthrough:** the replay does NOT store one `FReplicationReader::Read` envelope per
+  frame. It stores ONE continuous Iris session stream, split across all frames' packet
+  byte-buffers. The 16-bit `ObjectBatchCount` is read once at the stream start (frame 0);
+  every subsequent frame's packets are a continuation. The stream is a sequence of Read
+  calls: `[uint16 ObjectBatchCount][batches...]`, and one Read call's bytes may span frame
+  boundaries — the FRAME is not the decoding unit, the Read call is.
+- `phase4/session_reader.py`: `concat_frames()` (exact — `WritePacket` writes Count bytes
+  with no bit-trimming, so concatenation is bit-exact) then `session_decode()` loops
+  `[count][batches]` until the stream is exhausted, with bounded 1-byte resync.
+- **Validation (ad-hoc, exit 0, all 10 files):** 100.00% consumption. Reads=6..16,
+  batches=6808..24208 per file. Leftover ≤ ~1 byte (BatchSize export-seeking drift in
+  walk_batches, within tolerance). The 4 "outlier" files (3-6) decode cleanly — they were
+  never outliers, just didn't have a valid count at frame-0-offset-0.
+- This resolves p4x and makes the full Iris stream available for Phase 6 (per-object
+  property decode) across the ENTIRE replay, not just frame 0.
 
   ### Phase 5 — ✅ DONE (object identity & state descriptors, all 10 files)
 
