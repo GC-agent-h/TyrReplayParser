@@ -262,55 +262,62 @@ files, from both checkpoint and delta data.
     property serialization logic + the export group's per-field metadata (type/checksum), which the
     `FNetFieldExport` blob carries (CompatibleChecksum + ExportName) — enough to drive typed decode.
 
-  ### Phase 6 — ⚠️ structural decode DONE & verified; per-class VALUE decode BLOCKED (documented)
+  ### Phase 6 — ⚠️ structural decode + creation-header/class-resolution DONE; per-type VALUE decode in progress
 
   - `phase6/state_decoder.py`: walks the full continuous Iris session stream
     (`phase4/session_reader.concat_frames`) and for every object batch decodes the
-    per-object header (`ReadObjectInBatch`, ReplicationReader.cpp:1117):
-    `ReplicatedDestroyHeaderFlags`(3b) → `bHasState`(1) → `bIsInitialState`(1) →
-    [if initial] `bIsDeltaCompressed`(1) → [if delta] `BaselineIndex`(2b), then the
-    state = changemask + selected properties.
-  - **Changemask compact format:** `FNetBitArrayView::ReadBitStream` — words of 32b,
-    `last_word = ReadBits(ceil(log2(num_words)))`, then that many 32b words expanded
-    to bits. Decoded and exercised on every object in the stream.
-  - **STRUCTURAL decode verified (ad-hoc, exit 0, TyrReplay1):** 6 real classes
-    resolved across the whole session: `TyrAbilitySystemComponent`(1277),
-    `NetworkGameplayTagNodeIndex`(906), `BP_TyrLobbyPlayerState_C`(419),
-    `Map_Dunes_Rework_C`(244), `BP_LobbyPlayerRecord_C`(103), `BP_TyrGameState_C`(36).
-  - **BLOCKER — cm_size is NOT a unique class identifier.** The class-resolution
-    approach brute-forces the object's changemask bit-count (cm_size = export group's
-    `NumExportsInGroup`) and accepts the one whose compact changemask decodes + whose
-    property bits fit `BatchSize`. This WORKS for uniquely-sized classes (the 6 above),
-    but COLLIDES when multiple classes share a cm_size. Empirically proven: matching
-    cm_size=22 (WorldSettings) at offset 0 yields garbage handles (e.g. 539035397211673),
-    confirming non-WorldSettings objects also have 22 replicated fields. So cm_size
-    fitting is ambiguous and cannot reliably identify a specific class.
-  - **BLOCKER — initial-state creation payload unknown.** Initial objects carry a
-    creation-data payload (class reference, binary FNetObjectReference — NOT plaintext;
-    verified: no ASCII class paths in the region) BEFORE the changemask. The bridge's
-    `WriteCreationData`/`ReadCreationData` serialization is NOT in this partial engine
-    checkout, so the payload length/format can't be parsed to align initials. WorldSettings
-    is initial-only in this replay, so it's unreachable without it.
-  - **BLOCKER — per-type serializers.** Even with alignment, non-float props (int32,
-    bool, FVector, FString, struct, enum) need type-aware serializers. The SDK dump
-    (`ClassesInfo.json`) has field TYPES for natives (e.g. `AWorldSettings`), and the
-    replay's export group gives the ordered field list (WorldGravityZ confirmed as the
-    4th changemask bit via the export-group field order), but the replay does NOT carry
-    per-field type/serializer metadata needed to drive decode of mixed-type states.
-  - `extract_worldsettings_gravity()` exists but is explicitly EXPERIMENTAL/UNVERIFIED:
-    it finds cm_size=22 candidates but cannot distinguish real WorldSettings from
-    spurious cm_size-collision matches. Output is for inspection only, not a validated value.
-  - **Conclusion:** Phase 6's structural decode (header + changemask + per-object walk
-    across the entire replay) is solid and verified. Reliable per-class VALUE extraction
-    is blocked by the three issues above, which require either the full engine source
-    (bridge creation-data format + FReplicationProtocol serializers) or an alternative
-    class-identity channel (e.g. a handle→class map emitted elsewhere in the replay).
+    EXACT batch envelope + per-object header, reverse-engineered from the FULL UE 5.6.1
+    Iris engine source at `C:\UnrealEngine` (now confirmed complete, not partial):
+      * Batch envelope (`ReadObjectBatch`, ReplicationReader.cpp:967):
+        `ReadNetRefHandleId` → `BatchSize`=ReadBits(16) → `bHasBatchOwnerData`(1) →
+        `bHasExports`(1); objects run to `BatchEndPos` (root first if owner data, then
+        subobjects each reading their own handle); export section follows at BatchEndPos.
+      * Per-object header (`ReadObjectInBatch`, :1117): `ReplicatedDestroyHeaderFlags`(3b)
+        → `bHasState`(1) → `bIsInitialState`(1) → [if initial] `bIsDeltaCompressed`(1) →
+        [if delta] `BaselineIndex`(2b), then state.
+      * Creation-data payload (initial objects only): `UNetActorFactory::SerializeHeader`
+        → `WriteBool(bIsDynamic)` then `WriteFullNetObjectReference(ArchetypeReference)`
+        (the CLASS) + spawn info (location/scale/velocity quantized vectors, rotator,
+        bIsPreRegistered) + optional custom data. **The archetype handle is the
+        unambiguous class identifier** — solves the old cm_size-collision ambiguity.
+      * Changemask compact format (`FNetBitArrayView::ReadBitStream`): 32b words,
+        `last_word=ReadBits(ceil(log2(num_words)))`, then that many 32b words → bits.
+  - **Milestone (ad-hoc, exit 0, TyrReplay1):** decoder now iterates ALL 29,785 batches
+    (vs the old 17 — the old per-object framing was wrong). Initial objects parse the
+    creation header and extract the archetype (class) handle; classes are keyed by
+    archetype handle when available, else by cm_size. Float-heavy classes (cm16=179,
+    cm34=31) resolve via strict float-sum; archetype-keyed classes (arch0, arch31) resolve.
+    ~3,536 objects (mixed-type classes) are not yet resolved because the validator only
+    checks float-sum exact-fit — they need per-type serializers (below).
+  - **Two framing bugs fixed this session** (the old decoder mis-aligned everything):
+    (1) `BatchSize` is read ONCE per batch (16b), NOT per-object; (2) `WriteFullReference`
+    writes `bIsClientAssignedReference`(1) BEFORE the handle — the old reader skipped it,
+    shifting all subsequent bits by one.
+  - **BLOCKER (partially resolved) — initial-state creation payload.** The exact format is
+    now known from source (`UNetActorFactory` + `ObjectReferenceCache::WriteFullReference`
+    + `NetBitStreamUtil::ReadPackedUint64`). Creation headers now parse for the majority of
+    initial objects (archetype handle extracted). Edge cases remain: ~38/?? initial objects
+    still return `arch=None` — traced to the non-inline export path (`WriteReference`
+    omits the `bMustExport` bit) for some archetypes, and possibly `bInlineObjectReferenceExports`
+    stream configuration. Needs the stream flag + a non-inline read path.
+  - **BLOCKER (open) — per-type serializers.** Only float-only classes validate today
+    (strict tier assumes 32b floats). Mixed-type classes (WorldSettings cm22, etc.) need
+    type-aware property serializers. The SDK dump (`ClassesInfo.json`) has field TYPES for
+    natives (e.g. `AWorldSettings`); the replay export group gives ordered field list
+    (WorldGravityZ = 4th changemask bit). Joining these drives typed decode field-by-field.
+  - **BLOCKER (open) — archetype handle → class NAME map.** The archetype handle identifies
+    the class unambiguously, but mapping handle→path requires the replay's export/archetype
+    table (the export section at each batch end, or a global header). Not yet built.
+  - **Conclusion:** Phase 6 structural decode (header + batch framing + creation header +
+    changemask + per-object walk across the ENTIRE replay, 29,785 batches) is solid. Class
+    identity is now unambiguous via the archetype handle. Per-class VALUE extraction for
+    mixed-type classes needs per-type serializers + handle→class mapping (both now precisely
+    scoped from the engine source).
 
-  **Remaining (to unblock value decode):**
-  - Find an unambiguous class identifier (handle→protocol/class map) instead of cm_size.
-  - Parse initial-state creation-data payload (needs bridge source or empirical format
-    reverse of FNetObjectReference creation data).
-  - Add per-type serializers; join export-group field ORDER with SDK field TYPES to
-    decode mixed-type states field-by-field.
+  **Remaining (to complete value decode):**
+  - Build archetype-handle → class-name map from the replay export sections / global table.
+  - Add per-type serializers (int32/bool/FVector/FString/struct/enum) and join export-group
+    field ORDER with SDK field TYPES to decode mixed-type states field-by-field.
+  - Handle the non-inline export path (`WriteReference`) so all initial objects align.
   - Then extract + validate `WorldGravityZ` (4th changemask bit) across all 10 files.
 
