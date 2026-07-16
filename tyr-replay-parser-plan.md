@@ -262,10 +262,44 @@ files, from both checkpoint and delta data.
     property serialization logic + the export group's per-field metadata (type/checksum), which the
     `FNetFieldExport` blob carries (CompatibleChecksum + ExportName) — enough to drive typed decode.
 
-  **Remaining (Phase 4.x / Phase 6):**
-  - Fragment reassembly for frames 1+ and the 4 outlier files (3-6). The legacy `bPartial` bunch
-    reassembly or a replay-specific fragment tracker is the likely mechanism.
-  - Phase 6: pick one class (e.g. `BP_CaptureZone_C` or `WorldSettings`), read its actual replicated
-    property VALUES from the changemask-selected bits using UE replication serialization
-    (`FReplicationProtocolOperations::DeserializeWithMask`), validated across all 10 files.
+  ### Phase 6 — ✅ structural decode DONE; scalar VALUE decode partial (documented)
+
+  - `phase6/state_decoder.py`: walks the full continuous Iris session stream
+    (`phase4/session_reader.concat_frames`) and for every object batch decodes the
+    per-object header (`ReadObjectInBatch`, ReplicationReader.cpp:1117):
+    `ReplicatedDestroyHeaderFlags`(3b) → `bHasState`(1) → `bIsInitialState`(1) →
+    [if initial] `bIsDeltaCompressed`(1) → [if delta] `BaselineIndex`(2b), then the
+    state = changemask + selected properties.
+  - **Class resolution (self-validating):** the changemask bit-count is per-class =
+    the export group's `NumExportsInGroup` (Phase 5). Since the engine bridge's
+    creation-payload class serialization isn't in this partial checkout, the decoder
+    brute-forces the object's cm_size over all known export-group sizes and accepts
+    the one whose compact changemask decodes validly and whose property bits fit the
+    `BatchSize` state region. This identifies the class WITHOUT the creation payload.
+  - **Changemask compact format:** `FNetBitArrayView::ReadBitStream` — words of 32b,
+    `last_word = ReadBits(ceil(log2(num_words)))`, then that many 32b words expanded
+    to bits. Validated empirically by the per-object fit above.
+  - **Validation (ad-hoc, exit 0, TyrReplay1):** 6 real classes resolved across the
+    whole session: `TyrAbilitySystemComponent`(1277), `NetworkGameplayTagNodeIndex`(906),
+    `BP_TyrLobbyPlayerState_C`(444), `Map_Dunes_Rework_C`(271), `BP_LobbyPlayerRecord_C`(103),
+    `BP_TyrGameState_C`(36). Mode strict=528 / agnostic=2509 / skipped=629 (skipped =
+    no cm_size fit — usually initial-state objects whose creation-data payload precedes
+    the changemask and isn't yet parsed).
+  - **SCALAR VALUE DECODE — partial:** float (32b IEEE754) properties decode correctly
+    for DELTA (non-initial) objects via the strict fit. NOT yet working for:
+    (1) INITIAL-state objects — they carry a creation-data payload (class path / ctor
+        params) BEFORE the changemask; must parse that to align; (2) non-float property
+        types (int32, bool, FVector, FString, struct, enum) — need per-type serializers
+        from the SDK field-type metadata. WorldSettings `WorldGravityZ` (changemask bit 3)
+        is therefore not yet extracted (it's an initial-state object in this replay).
+  - This is a solid Phase 6 foundation: per-object state STRUCTURE + class identity +
+    changemask dirty-bit map across the entire replay. Full typed value extraction is
+    the remaining sub-step (parse initial creation data + per-type serializers).
+
+  **Remaining:**
+  - Phase 6 value decode: (a) parse initial-state creation-data payload to align
+    initials; (b) add per-type serializers (int/bool/vector/string/struct/enum) driven
+    by the export group's per-field type metadata; (c) extract + validate `WorldGravityZ`
+    (and one gameplay field) end-to-end across all 10 files.
+  - Cross-validate class resolution across all 10 files (not just TyrReplay1).
 
