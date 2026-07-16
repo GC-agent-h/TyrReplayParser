@@ -262,9 +262,46 @@ files, from both checkpoint and delta data.
     property serialization logic + the export group's per-field metadata (type/checksum), which the
     `FNetFieldExport` blob carries (CompatibleChecksum + ExportName) — enough to drive typed decode.
 
-  ### Phase 6 — ⚠️ structural decode + creation-header/class-resolution DONE; per-type VALUE decode BLOCKED on WorldSettings class isolation
+  ### Phase 6 — structural decode + class resolution + per-type VALUE extraction (option 1) DONE
 
-  - `phase6/state_decoder.py`: walks the full continuous Iris session stream
+  - **CRITICAL FIX: fixed-width bit reads (`read_bits` vs `read_int`).** `BitReader.read_int(N)`
+    is UE `SerializeInt` (variable `ceil(log2(N))` bits) — WRONG for the many fixed-width Iris
+    fields. Added `BitReader.read_bits(N)` (true LSB-first fixed width) in `phase4/bitstream.py`
+    and switched ALL engine fixed-width reads in `phase6/state_decoder.py` to it: `batch_size`
+    (=ReadBits(16), was corrupting framing!), `changemask` masks + sparse-uint header/deltas,
+    `read_packed_uint64/32`, `read_string` len+payload, `read_net_token` payload, `read_float32`,
+    `read_conditional_vector` (90/96b), `read_rotator` (48b), `destroy_flags` (3b), `BaselineIndex`
+    (2b). This was a pervasive bug corrupting ALL decoding.
+  - **CHANGEMASK = `ReadSparseBitArray` (FNetBitArrayView, NetBitStreamUtil.cpp:645), NOT raw bits.**
+    `NonZeroWordMask`=ReadBits(WordCount); optional `InvertedWordMask`=ReadBits(WordCount) if
+    ReadBool(); per word `ReadSparseUint32UsingIndices` (2-bit header=GetBitsNeeded(3) + delta-
+    encoded bit indices) or byte-mask fallback `(8-BitCount)&7` trim. Round-trip unit-tested:
+    300 cases (cm 16/21/22/34/43/64, 30% density) PASS.
+  - **BATCH ENVELOPE corrected from engine source (ReplicationReader.cpp:929):**
+    `bIsDestructionInfo`(1) → [ReadSentinel 0b] → if destruction: `ReadFullNetObjectReference` +
+    `ReadBits(3)` (NetFactoryId max) → else: `BatchHandle`=`ReadPackedUint64` (NO valid bit) →
+    `BatchSize`=ReadBits(16) → `bHasBatchOwnerData`(1) → `bHasExports`(1). Subobject handles also
+    use `ReadPackedUint64` (no valid bit). Per-batch EXPORT TAIL now skipped via `read_exports`
+    (ObjectReferenceCache.cpp:1714: NetToken exports + NetObjectReference exports + MustBeMapped).
+  - **PER-PACKET DECODE (correct Iris model).** Each frame packet is a self-contained
+    `FReplicationReader::Read()` with its own `ObjectBatchCount`=ReadBits(16). `decode_session`
+    now runs PER PACKET (not on the concatenated stream), so a misread cannot cascade. Result:
+    **reads=3538 packets**, cm16=30 objects, archetype→class resolves
+    `Map_Dunes_Rework_C` (cm16) correctly (e.g. arch=24 → Map_Dunes_Rework_C).
+  - **OPTION 1 DELIVERABLE: typed value extraction (no field names).** SDK lacks Tyr game
+    classes and FNetFieldExport names are FName indices (blocked), so per-object state is
+    extracted as: read changemask, then for each SET bit decode a 32-bit word and present BOTH
+    the `float32` and `int32` view (`extract_object_values`). Sample output shows real dirty
+    values for cm16 (Map_Dunes_Rework_C) actors, e.g. `bit10:f1792.407`, `bit5:i-1856751075`.
+    `strict-decoded objects with state captured: 32` (cm16), 5 with non-zero dirty changemasks.
+  - **WorldSettings / WorldGravityZ — DROPPED (user "Do 1").** Conclusive static-level-actor
+    dead-end (see prior analysis). Not attempted in option 1.
+  - **Note:** `ReadObjectsPendingDestroy` (16-bit count + records) is present in the source
+    between `ObjectBatchCount` and the object loop, but empirical decode with it enabled consumed
+    the whole stream (destroy-count misread); left DISABLED (`destroyed=0`) for now — per-packet
+    isolation keeps framing stable without it. Revisit if object counts come up short.
+
+
     (`phase4/session_reader.concat_frames`) and for every object batch decodes the
     EXACT batch envelope + per-object header, reverse-engineered from the FULL UE 5.6.1
     Iris engine source at `C:\\UnrealEngine` (confirmed complete):

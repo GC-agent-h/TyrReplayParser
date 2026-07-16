@@ -44,6 +44,13 @@ class BitReader:
         bit = (byte >> (self.pos & 7)) & 1
         self.pos += 1
         return bit
+    def read_bits(self, n):
+        """Read exactly `n` bits LSB-first (fixed-width, like UE FBitReader::ReadBits).
+        Distinct from read_int(maximum) which is SerializeInt (variable ceil(log2(max)))."""
+        v = 0
+        for i in range(n):
+            v |= self.read_bit() << i
+        return v
     def read_int(self, maximum):
         """SerializeInt(Value, Max): NumBits = ceil(log2(Max)), LSB-first."""
         if maximum <= 1:
