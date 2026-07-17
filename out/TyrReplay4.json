@@ -1,0 +1,479 @@
+{
+  "replay": "TyrReplay4.replay",
+  "phases": {
+    "phase1_container": {
+      "file_version": 7,
+      "chunk_count": 35,
+      "chunk_types": {
+        "Header": 2,
+        "Unknown": 1,
+        "ReplayData": 22,
+        "Checkpoint": 10
+      }
+    },
+    "phase2_decompression": {
+      "methods": {
+        "Header": 2,
+        "ReplayData": 22,
+        "Checkpoint": 10
+      }
+    },
+    "phase3_frames": {
+      "replaydata_frames": 2406,
+      "tile_ok": true,
+      "total_packets": 5144
+    },
+    "phase5_class_inventory": {
+      "export_groups": 135,
+      "distinct_cm_sizes": [
+        1,
+        7,
+        8,
+        12,
+        16,
+        19,
+        21,
+        22,
+        23,
+        34,
+        43,
+        64,
+        83,
+        1947
+      ],
+      "class_by_cm": {
+        "1": [
+          "TyrTeamPublicInfo_ClassNetCache",
+          "TyrAmmunitionComponent_ClassNetCache"
+        ],
+        "7": [
+          "TyrMiniMapComponent"
+        ],
+        "8": [
+          "BPC_TurretBaseComponent_C"
+        ],
+        "12": [
+          "PrvVehicleMovementComponent"
+        ],
+        "16": [
+          "BP_BasicSpawnWall_C",
+          "TyrAmmunitionComponent"
+        ],
+        "19": [
+          "NetworkPredictionReplicatedManager"
+        ],
+        "21": [
+          "BP_CaptureZone_C",
+          "BP_HealZone_C",
+          "StaticMeshComponent",
+          "BP_AbilityResourceZone_C",
+          "BP_AmmunitionZone_C",
+          "BP_Recall_C",
+          "BP_Stealth_C"
+        ],
+        "22": [
+          "WorldSettings",
+          "PC_Replay_C"
+        ],
+        "23": [
+          "TyrTeamPublicInfo"
+        ],
+        "34": [
+          "BP_LobbyPlayerRecord_C"
+        ],
+        "43": [
+          "BP_TyrGameState_C"
+        ],
+        "64": [
+          "BP_TyrLobbyPlayerState_C",
+          "BP_TyrPlayerState_C"
+        ],
+        "83": [
+          "TyrAbilitySystemComponent"
+        ],
+        "1947": [
+          "NetworkGameplayTagNodeIndex"
+        ]
+      }
+    },
+    "phase6_iris_decode": {
+      "reads": 4805,
+      "skipped": 2831,
+      "objects_captured": 40,
+      "mode_counts": {
+        "strict": 9,
+        "agnostic": 31
+      },
+      "top_classes_by_object_count": [
+        [
+          "cm1",
+          37
+        ],
+        [
+          "arch48",
+          1
+        ],
+        [
+          "cm83",
+          1
+        ],
+        [
+          "cm12",
+          1
+        ]
+      ],
+      "archetype_to_class": [
+        {
+          "archetype_handle": "48",
+          "cm_size": 1,
+          "class": "TyrTeamPublicInfo_ClassNetCache"
+        }
+      ],
+      "per_class_state": {
+        "PrvVehicleMovementComponent": {
+          "objects": 1,
+          "dirty_objects": 1,
+          "samples": [
+            {
+              "handle": 34359738446,
+              "cm_size": 12,
+              "changemask": "001000010000",
+              "values": [
+                {
+                  "bit": 2,
+                  "float": 9.459132334909554e-38,
+                  "int": 33603652
+                },
+                {
+                  "bit": 7,
+                  "float": 2.515391391813733e-17,
+                  "int": 602407168
+                }
+              ]
+            }
+          ]
+        },
+        "TyrAbilitySystemComponent": {
+          "objects": 1,
+          "dirty_objects": 1,
+          "samples": [
+            {
+              "handle": 34359738440,
+              "cm_size": 83,
+              "changemask": "00000000000000000000000000000000000000000000000000000000000000000000000010000000100",
+              "values": [
+                {
+                  "bit": 72,
+                  "float": -9.459132334909554e-38,
+                  "int": -2113879996
+                },
+                {
+                  "bit": 80,
+                  "float": 2.515392384430468e-17,
+                  "int": 602407174
+                }
+              ]
+            }
+          ]
+        },
+        "TyrTeamPublicInfo_ClassNetCache": {
+          "objects": 38,
+          "dirty_objects": 9,
+          "samples": [
+            {
+              "handle": 56,
+              "cm_size": 1,
+              "changemask": "1",
+              "values": [
+                {
+                  "bit": 0,
+                  "float": 3.978932030000438e+19,
+                  "int": 1611271172
+                }
+              ]
+            },
+            {
+              "handle": 193,
+              "cm_size": 1,
+              "changemask": "1",
+              "values": [
+                {
+                  "bit": 0,
+                  "float": 1.984105857516234e-17,
+                  "int": 599195744
+                }
+              ]
+            },
+            {
+              "handle": 193,
+              "cm_size": 1,
+              "changemask": "1",
+              "values": [
+                {
+                  "bit": 0,
+                  "float": 8.633773374169128e-24,
+                  "int": 421986400
+                }
+              ]
+            },
+            {
+              "handle": 193,
+              "cm_size": 1,
+              "changemask": "1",
+              "values": [
+                {
+                  "bit": 0,
+                  "float": 7.289120986560814e-28,
+                  "int": 308740192
+                }
+              ]
+            },
+            {
+              "handle": 193,
+              "cm_size": 1,
+              "changemask": "1",
+              "values": [
+                {
+                  "bit": 0,
+                  "float": 1.9769737809052403e-22,
+                  "int": 460259424
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "username_checkpoint_plaintext": {
+      "players": [
+        "Unimork"
+      ],
+      "subsystem_ids": [
+        "2147239908"
+      ]
+    },
+    "player_subsystem_roster": {
+      "block_count": 21,
+      "blocks": [
+        {
+          "subsystem_id": "2147242239",
+          "components": [
+            "HealthComponent",
+            "TyrPlayerComponentSubsystem_2147242263",
+            "TyrPlayerTechTreeSubsystem_2147242262",
+            "TyrTestPlayerStateSubsystem_2147242261"
+          ]
+        },
+        {
+          "subsystem_id": "2147242261",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147242206",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147242451",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240782",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240719",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240698",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240678",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240639",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240645",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240626",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240606",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147240525",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147239908",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147239635",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147239687",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147239529",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147239315",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147239183",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147238992",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147238500",
+          "components": []
+        }
+      ]
+    },
+    "phase5_field_schema": {
+      "export_parse_error": false,
+      "classes": {
+        "/Script/NetworkPrediction.NetworkPredictionReplicatedManager": {
+          "cm_size": 19,
+          "bit0_field": "hardcoded#216",
+          "class_short": "NetworkPredictionReplicatedManager"
+        },
+        "/Script/Engine.WorldSettings": {
+          "cm_size": 22,
+          "bit0_field": "hardcoded#216",
+          "class_short": "WorldSettings"
+        },
+        "/Game/Blueprints/Actors/BP_CaptureZone.BP_CaptureZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_CaptureZone_C"
+        },
+        "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C": {
+          "cm_size": 16,
+          "bit0_field": "bHidden",
+          "class_short": "BP_BasicSpawnWall_C"
+        },
+        "/Game/Blueprints/GameModes/BP_LobbyPlayerRecord.BP_LobbyPlayerRecord_C": {
+          "cm_size": 34,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_LobbyPlayerRecord_C"
+        },
+        "NetworkGameplayTagNodeIndex": {
+          "cm_size": 1947,
+          "bit0_field": "Gameplay.Ammunition.Type.Silenced",
+          "class_short": "NetworkGameplayTagNodeIndex"
+        },
+        "/Game/Blueprints/Capturables/BP_HealZone.BP_HealZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_HealZone_C"
+        },
+        "/Script/Engine.StaticMeshComponent": {
+          "cm_size": 21,
+          "bit0_field": "AttachParent",
+          "class_short": "StaticMeshComponent"
+        },
+        "/Script/Tyr.TyrAbilitySystemComponent": {
+          "cm_size": 83,
+          "bit0_field": "PredictionKey",
+          "class_short": "TyrAbilitySystemComponent"
+        },
+        "/Game/Blueprints/Capturables/BP_AbilityResourceZone.BP_AbilityResourceZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_AbilityResourceZone_C"
+        },
+        "/Game/Blueprints/Capturables/BP_AmmunitionZone.BP_AmmunitionZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_AmmunitionZone_C"
+        },
+        "/Game/Blueprints/GameModes/BP_TyrGameState.BP_TyrGameState_C": {
+          "cm_size": 43,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_TyrGameState_C"
+        },
+        "/Game/Blueprints/GameModes/BP_TyrLobbyPlayerState.BP_TyrLobbyPlayerState_C": {
+          "cm_size": 64,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_TyrLobbyPlayerState_C"
+        },
+        "/Game/Blueprints/GameModes/BP_TyrPlayerState.BP_TyrPlayerState_C": {
+          "cm_size": 64,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_TyrPlayerState_C"
+        },
+        "/Game/Blueprints/GameModes/PC_Replay.PC_Replay_C": {
+          "cm_size": 22,
+          "bit0_field": "hardcoded#216",
+          "class_short": "PC_Replay_C"
+        },
+        "/Script/Tyr.TyrTeamPublicInfo": {
+          "cm_size": 23,
+          "bit0_field": "hardcoded#216",
+          "class_short": "TyrTeamPublicInfo"
+        },
+        "/Script/Tyr.TyrTeamPublicInfo_ClassNetCache": {
+          "cm_size": 1,
+          "bit0_field": "TeamTags",
+          "class_short": "TyrTeamPublicInfo_ClassNetCache"
+        },
+        "/TyrVehicleRecall/Blueprints/BP_Recall.BP_Recall_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_Recall_C"
+        },
+        "/Script/PsRealVehiclePlugin.PrvVehicleMovementComponent": {
+          "cm_size": 12,
+          "bit0_field": "bIsActive",
+          "class_short": "PrvVehicleMovementComponent"
+        },
+        "/Script/Tyr.TyrMiniMapComponent": {
+          "cm_size": 7,
+          "bit0_field": "A",
+          "class_short": "TyrMiniMapComponent"
+        },
+        "/Script/Tyr.TyrAmmunitionComponent": {
+          "cm_size": 16,
+          "bit0_field": "NextAmmunitionSlot",
+          "class_short": "TyrAmmunitionComponent"
+        },
+        "/Script/Tyr.TyrAmmunitionComponent_ClassNetCache": {
+          "cm_size": 1,
+          "bit0_field": "AmmunitionStackCountTags",
+          "class_short": "TyrAmmunitionComponent_ClassNetCache"
+        },
+        "/Game/Blueprints/Components/BPC_TurretBaseComponent.BPC_TurretBaseComponent_C": {
+          "cm_size": 8,
+          "bit0_field": "YawQuantized",
+          "class_short": "BPC_TurretBaseComponent_C"
+        },
+        "/TyrVehicleStealth/Blueprints/BP_Stealth.BP_Stealth_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_Stealth_C"
+        }
+      }
+    }
+  }
+}

@@ -29,8 +29,24 @@ import frame_parser as fp
 
 
 def extract_export_groups(replay_path):
-    """Return list of (path_name, num_exports_in_group, first_field_name) for a replay's
-    first frame export section, plus the NetReader offset where export parsing ended."""
+    """Return list of (path_name, num_exports_in_group, [bit0_field_name], pni, we)
+    for a replay's first frame export section, plus the NetReader offset where export
+    parsing ended.
+
+    Each FNetFieldExportGroup = one replicated class. num_exports_in_group == the Iris
+    changemask bit-count (number of replicated state members). The replay's export
+    section stores exactly ONE FNetFieldExport name per group (the bit-0 / first
+    replicated property); the remaining bit->name entries are NOT present in the stream
+    (they live in the checkpoint's FReplicationStateDescriptor, which is binary and not
+    recoverable without the engine source). So `fields` is a 1-element list: the bit-0
+    name. Native classes resolve to real FStrings; Blueprint classes show
+    'hardcoded#<FNameIndex>' for bit-0 when the Dumper couldn't resolve it.
+
+    NOTE: an earlier attempt to read all `nec` FNetFieldExport entries per group desynced
+    at group 1 (the export blob only carries the bit-0 name inline; the rest of the field
+    list is reconstructed elsewhere). The single-field read below is the aligned,
+    all-135-groups version.
+    """
     r = ReplayReader(replay_path)
     r.parse_header(); r.parse_chunks()
     payload = None
@@ -52,9 +68,11 @@ def extract_export_groups(replay_path):
         pni = np.sip(); we = np.sip()
         if np.err:
             break
-        path = None; nec = 0; first_field = None
+        path = None; nec = 0; fields = []
         if we:
             path = np.fstring(); nec = np.sip()
+        # One FNetFieldExport name per group (bit-0). This read is aligned across all
+        # 135 groups; reading beyond it desyncs the stream.
         flags = np.u8()
         if np.err:
             break
@@ -63,16 +81,16 @@ def extract_export_groups(replay_path):
             bhard = np.u8()
             if bhard:
                 nm = np.sip()
-                first_field = ('hardcoded#%d' % nm) if isinstance(nm, int) else nm
+                fields.append(('hardcoded#%d' % nm) if isinstance(nm, int) else nm)
             else:
                 nm = np.fstring(); np.o += 4
-                first_field = nm
+                fields.append(nm)
         if flags & 2:
             ln = np.sip()
             if np.err or ln > 1 << 20 or np.o + ln > np.n:
                 np.err = True; break
             np.o += ln
-        groups.append((path, nec, first_field, pni, we))
+        groups.append((path, nec, fields, pni, we))
     return groups, np.err, params
 
 
@@ -134,7 +152,9 @@ def main():
             if in_sdk:
                 matched += 1
             if len(sample) < 6:
-                sample.append((cs, g[1], (g[2] or '').rstrip('\x00'), in_sdk))
+                fields = g[2]
+                first = (fields[0] if fields else None) or ''
+                sample.append((cs, g[1], first.rstrip('\x00'), in_sdk))
         status = 'OK' if not err else 'ERR'
         if err:
             all_ok = False
