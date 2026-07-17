@@ -345,14 +345,18 @@ files, from both checkpoint and delta data.
     cm64=BP_TyrPlayerState does NOT appear in any sample replay (only its cm34 PlayerRecord subclass
     does). cm1/cm3/cm5/cm7/cm11/cm12/cm83 appear in various replays.
 
-  **What you CANNOT do yet (blocked, with reason):**
-  - **Player username (`PlayerName`): NOT extractable.** Proven this session 3 ways:
-    1. Decoder only catches small cm34 DELTA updates (bit32 = small int), never the initial
-       creation that carries PlayerName.
-    2. Raw FString scan (int32 length + ASCII) across ALL packet bytes of TyrReplay10/7/8 → 0 hits.
-    3. The 291 raw ASCII fragments found are StringTokenStore dictionary entries (delta-compressed
-       FName/string table), not plaintext names. → Username is StringTokenStore-encoded; recovering
-       it requires decoding the FNetFieldExport / StringTokenStore stream (option B).
+  **Player username (`PlayerName`): EXTRACTABLE (from checkpoint plaintext).** Verified all 10
+    replays — the display name (e.g. "Unimork") is written in plaintext inside CHECKPOINT chunks,
+    in a `TyrTestPlayerStateSubsystem_<id>` entry (null-terminated ascii after a marker + zero).
+    `phase6/state_decoder.py::load_player_names()` scans the raw replay bytes and returns
+    `{subsystem_id: name}`. Integrated into `main()` which prints a per-replay roster line.
+    IMPORTANT: the name is NEVER in the live Iris ReplayData bitstream (raw byte scan of all
+    packets in TyrReplay10 → 0 occurrences), so it cannot be recovered from decoded live objects;
+    it is a per-replay checkpoint fact, not per-object state. The cm34 (BP_LobbyPlayerRecord)
+    tag in the output explicitly notes `from checkpoint plaintext`.
+  - **Live-stream cm34 creation-payload descent (option c) — PROVEN INFEASIBLE.** The username
+    does not appear in any live ReplayData packet, so descending into the cm34 creation bunch
+    yields nothing. Checkpoint plaintext is the only source.
   - **Labeled fields (e.g. "bit 5 = Kills"): NOT available.** Needs the bit→field-name mapping
     (Dumper-7 + Iris replicated order), which is unwritten. `extract_object_values` gives positional
     float/int words only.
@@ -361,15 +365,63 @@ files, from both checkpoint and delta data.
 
   ---
 
+  ### Phase 7 — Option B: field labeling (attempted 2026-07-17, PARTIAL)
+
+  **Goal:** map changemask bits -> field names (labeled stats) + decode usernames.
+
+  **Delivered (phase7/field_labeler.py + phase7/validate_option_b.py):**
+  - Full Dumper field-set dictionaries (name + type per class) loaded and cross-linked
+    to every replay export group via direct match (native classes) or parent-class
+    inheritance (Blueprint `BP_*_C`/`Map_*_C`/`PC_Replay_C` -> their native Dumper parent,
+    e.g. `BP_LobbyPlayerRecord_C` -> `Tyr.TyrPlayerRecord`: PlayerName/MyTeamID/bIsAlive/StatTags).
+  - Labeled decode pipeline: per dirty changemask bit, attach candidate field name(s) +
+    raw 32-bit (float/int) value. Ambiguity (multiple classes share a cm_size) is flagged
+    explicitly (`[AMBIGUOUS cm_size]`) rather than guessed.
+  - Validated that the replay's export `first_field` (bit-0 property) resolves to a real
+    name for native classes (field SET is correct), enabling type-checked candidate labels.
+
+  **CRITICAL FINDING (validated across all 10 replays, 67 native classes):**
+    **replay bit-0 != Dumper[0] for ALL 67 native classes (0 matches).**
+    => **Dumper declaration order != Iris changemask bit order** (confirms the earlier
+    caveat). So `bit N != Dumper field N`. The Dumper list is a valid FIELD-SET dictionary
+    (correct names + types) but its ORDER is not the wire/changemask order.
+
+  **Remaining gate (the real Option B blocker, as predicted):**
+  - The authoritative Iris field order lives in the replay's OWN `FNetFieldExport` table.
+    The first-frame export blob only carries the delta-exported fields (e.g. WorldSettings
+    nec=22 but only 9 FNetFieldExport records in frame 0; several as `hardcoded#N` FName
+    indices). The COMPLETE per-bit name table is in the Checkpoint/NetExport stream or
+    requires decoding the StringTokenStore dictionary (the plan's flagged gate).
+  - 120 Blueprint classes carry `hardcoded#216` (and similar) for bit-0 -> their field
+    names are FName-index-encoded and need the engine's hardcoded FName table (from the
+    shipping exe `TyrClient-Win64-Shipping.exe`) OR the StringTokenStore decode.
+  - Per-field VALUE decoding also needs per-type NetSerializer logic (structs/vectors/
+    gameplay tags) — currently only raw 32-bit words are recovered (float+int views).
+
+  **Conclusion:** Option B part (a) [bit->name] is BLOCKED at the authoritative-order step;
+  the Dumper approach gives field SETS but not proven bit ORDER. Part (b) [usernames] is
+  SOLVED via checkpoint plaintext (`load_player_names` in phase6) — no StringTokenStore decode
+  needed for the display name. Next concrete step to unblock part (a): resolve hardcoded FName
+  indices from the exe (map #216 -> property name) AND/OR decode the Checkpoint NetExport
+  FNetFieldExport block for the full ordered table.
+
+  ---
+
   ### Remaining work (next phases)
 
-  - **Option B — field labeling (highest value, unattempted):** parse the live `FNetFieldExport` /
-    `StringTokenStore` stream (NetExportSerialize.cpp) to (a) map changemask bits → field names for
-    ALL classes at once, and (b) decode the string dictionary so `PlayerName`/usernames resolve.
-    This unlocks both labeled player-stats AND usernames. The StringTokenStore dict-delta is the
-    real gate (it misaligned when attempted on WorldSettings earlier; may align for player classes).
+  - **Username (player display name): DONE.** Recovered from checkpoint plaintext via
+    `load_player_names()` in phase6/state_decoder.py (verified all 10 replays). No live-stream
+    or StringTokenStore decode required. To be committed alongside the Phase 6 state_start/read_bits
+    fixes and the Phase 7 scripts.
+  - **Option B continued — resolve hardcoded FName indices / decode Checkpoint NetExport:**
+    extract the engine hardcoded FName table from `TyrClient-Win64-Shipping.exe` to map
+    `hardcoded#N` -> property name, and/or parse the Checkpoint chunk's full
+    `FNetFieldExport` (all field names, ordered) to get authoritative bit->name for all
+    classes at once. This is the gate for labeled stats (NOT for usernames, which are solved).
+  - Per-field typed value decode (NetSerializers) so raw 32-bit words become real values.
   - Re-enable / correctly position `ReadObjectsPendingDestroy` if object counts come up short.
-  - Commit the `state_start` fix + `read_bits` + changemask + per-packet refactor (currently
-    UNCOMMITTED on top of `159e919`).
+  - Commit Phase 6 username integration (state_decoder.py) + Phase 7 scripts (username extractor,
+    field labeler, checkpoint explorer). The core Phase 6 fixes (state_start, read_bits,
+    changemask, per-packet) were already committed in earlier sessions.
   - Optional: run the decoder across all 10 replays to build a class-inventory consistency table.
 

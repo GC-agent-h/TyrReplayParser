@@ -1,0 +1,1345 @@
+{
+  "generated_utc": "2026-07-17T14:31:33.597057Z",
+  "generator": "phase7/export_results_json.py",
+  "method": "per-packet Iris decode (FReplicationReader::Read) per frame packet; option-1 raw value extraction",
+  "replays_analyzed": 1,
+  "replay_results": [
+    {
+      "replay": "TyrReplay1.replay",
+      "errors": [],
+      "export_err": false,
+      "export_group_count": 106,
+      "distinct_changemask_sizes": [
+        16,
+        21,
+        22,
+        34,
+        43,
+        64,
+        83,
+        1947
+      ],
+      "class_inventory": {
+        "16": [
+          {
+            "class_path": "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C",
+            "first_field": "hardcoded#216"
+          },
+          {
+            "class_path": "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C",
+            "first_field": "bHidden"
+          }
+        ],
+        "21": [
+          {
+            "class_path": "/Game/Blueprints/Actors/BP_CaptureZone.BP_CaptureZone_C",
+            "first_field": "hardcoded#216"
+          },
+          {
+            "class_path": "/Game/Blueprints/Capturables/BP_HealZone.BP_HealZone_C",
+            "first_field": "hardcoded#216"
+          },
+          {
+            "class_path": "/Script/Engine.StaticMeshComponent",
+            "first_field": "AttachParent"
+          },
+          {
+            "class_path": "/Game/Blueprints/Capturables/BP_AmmunitionZone.BP_AmmunitionZone_C",
+            "first_field": "hardcoded#216"
+          },
+          {
+            "class_path": "/Game/Blueprints/Capturables/BP_AbilityResourceZone.BP_AbilityResourceZone_C",
+            "first_field": "hardcoded#216"
+          }
+        ],
+        "22": [
+          {
+            "class_path": "/Script/Engine.WorldSettings",
+            "first_field": "hardcoded#216"
+          },
+          {
+            "class_path": "/Game/Blueprints/GameModes/PC_Replay.PC_Replay_C",
+            "first_field": "hardcoded#216"
+          }
+        ],
+        "34": [
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_LobbyPlayerRecord.BP_LobbyPlayerRecord_C",
+            "first_field": "hardcoded#216"
+          }
+        ],
+        "43": [
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_TyrGameState.BP_TyrGameState_C",
+            "first_field": "hardcoded#216"
+          }
+        ],
+        "64": [
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_TyrLobbyPlayerState.BP_TyrLobbyPlayerState_C",
+            "first_field": "hardcoded#216"
+          },
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_TyrPlayerState.BP_TyrPlayerState_C",
+            "first_field": "hardcoded#216"
+          }
+        ],
+        "83": [
+          {
+            "class_path": "/Script/Tyr.TyrAbilitySystemComponent",
+            "first_field": "PredictionKey"
+          }
+        ],
+        "1947": [
+          {
+            "class_path": "NetworkGameplayTagNodeIndex",
+            "first_field": "Gameplay.Vehicle.CanOpener"
+          }
+        ]
+      },
+      "structural_decode": {
+        "frame_count": 3781,
+        "packet_count": 3842,
+        "iris_reads": 3538,
+        "objects_decoded": 32,
+        "skipped_batches": 2033,
+        "decode_mode_counts": {
+          "strict": 1,
+          "agnostic": 31
+        },
+        "class_counts_by_key": {
+          "cm16": 30,
+          "arch40865491179282411": 1,
+          "arch13782141912859279616": 1
+        },
+        "initial_archetype_handle_histogram": {
+          "null": 5,
+          "40865491179282411": 1,
+          "13782141912859279616": 1
+        }
+      },
+      "archetype_to_class": {
+        "40865491179282411": {
+          "changemask_size": 16,
+          "class_path": "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C",
+          "all_candidate_paths": [
+            "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C",
+            "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C"
+          ]
+        },
+        "13782141912859279616": {
+          "changemask_size": 16,
+          "class_path": "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C",
+          "all_candidate_paths": [
+            "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C",
+            "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C"
+          ]
+        }
+      },
+      "object_states_with_dirty_values": [
+        {
+          "handle": "984663271616",
+          "class_key": "cm16",
+          "changemask_size": 16,
+          "resolved_class": "cm16",
+          "changemask_bits_set": 1,
+          "changemask": 32,
+          "values": [
+            {
+              "bit": 5,
+              "float32": -0.0,
+              "int32": -1856751075
+            }
+          ]
+        },
+        {
+          "handle": "215864094913",
+          "class_key": "cm16",
+          "changemask_size": 16,
+          "resolved_class": "cm16",
+          "changemask_bits_set": 16,
+          "changemask": 65535,
+          "values": [
+            {
+              "bit": 0,
+              "float32": -1.873871,
+              "int32": -1074799869
+            },
+            {
+              "bit": 1,
+              "float32": -1.2981050358657317e+26,
+              "int32": -355024669
+            },
+            {
+              "bit": 2,
+              "float32": -0.0,
+              "int32": -1301656892
+            },
+            {
+              "bit": 3,
+              "float32": 37865274736640.0,
+              "int32": 1443479753
+            },
+            {
+              "bit": 4,
+              "float32": -0.0,
+              "int32": -1550187149
+            },
+            {
+              "bit": 5,
+              "float32": 0.0,
+              "int32": 741851269
+            },
+            {
+              "bit": 6,
+              "float32": -2.152089186067426e+34,
+              "int32": -125525509
+            },
+            {
+              "bit": 7,
+              "float32": 3.4015474064547056e+22,
+              "int32": 1692827505
+            },
+            {
+              "bit": 8,
+              "float32": 6.078539978288147e+24,
+              "int32": 1755375050
+            },
+            {
+              "bit": 9,
+              "float32": -2.9401312051351925e+29,
+              "int32": -261259139
+            },
+            {
+              "bit": 10,
+              "float32": 1792.406616,
+              "int32": 1155534083
+            },
+            {
+              "bit": 11,
+              "float32": 0.0,
+              "int32": 294572
+            },
+            {
+              "bit": 12,
+              "float32": 0.0,
+              "int32": 631898112
+            },
+            {
+              "bit": 13,
+              "float32": 0.0,
+              "int32": 262604
+            },
+            {
+              "bit": 14,
+              "float32": 3.8e-05,
+              "int32": 941490176
+            },
+            {
+              "bit": 15,
+              "float32": 0.0,
+              "int32": 786704
+            }
+          ]
+        },
+        {
+          "handle": "2615265",
+          "class_key": "cm16",
+          "changemask_size": 16,
+          "resolved_class": "cm16",
+          "changemask_bits_set": 1,
+          "changemask": 8,
+          "values": [
+            {
+              "bit": 3,
+              "float32": -30847459655680.0,
+              "int32": -706711073
+            }
+          ]
+        },
+        {
+          "handle": "0",
+          "class_key": "cm16",
+          "changemask_size": 16,
+          "resolved_class": "cm16",
+          "changemask_bits_set": 1,
+          "changemask": 4,
+          "values": [
+            {
+              "bit": 2,
+              "float32": 103231455232.0,
+              "int32": 1371555992
+            }
+          ]
+        },
+        {
+          "handle": "119",
+          "class_key": "arch13782141912859279616",
+          "changemask_size": 16,
+          "resolved_class": "cm16",
+          "changemask_bits_set": 1,
+          "changemask": 8,
+          "values": [
+            {
+              "bit": 3,
+              "float32": -185758832.0,
+              "int32": -852416697
+            }
+          ]
+        }
+      ],
+      "object_states_dirty_count": 5,
+      "field_label_table": {
+        "22": [
+          {
+            "class_path": "/Script/Engine.WorldSettings",
+            "dumper_class": "Engine.WorldSettings",
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 63,
+            "fields": [
+              {
+                "name": "VisibilityCellSize",
+                "type": "IntProperty"
+              },
+              {
+                "name": "VisibilityAggressiveness",
+                "type": "ByteProperty"
+              },
+              {
+                "name": "bPrecomputeVisibility",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bPlaceCellsOnlyAlongCameraTracks",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEnableWorldBoundsChecks",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEnableNavigationSystem",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEnableAISystem",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEnableWorldComposition",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bUseClientSideLevelStreamingVolumes",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEnableWorldOriginRebasing",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bWorldGravitySet",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bGlobalGravitySet",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bMinimizeBSPSections",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bForceNoPrecomputedLighting",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bForceVolumetricLightmapsOnly",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bHighPriorityLoading",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bHighPriorityLoadingLocal",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideDefaultBroadphaseSettings",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bGenerateSingleClusterForLevel",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bAllowTimeDilation",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bReuseAddressAndPort",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "AISystemClass",
+                "type": "SoftClassProperty"
+              },
+              {
+                "name": "LevelInstancePivotOffset",
+                "type": "StructProperty"
+              },
+              {
+                "name": "NavigationSystemConfig",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "NavigationSystemConfigOverride",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "WorldPartition",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "BaseNavmeshDataLayers",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "WorldToMeters",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "KillZ",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "KillZDamageType",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "WorldGravityZ",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "GlobalGravityZ",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "DefaultPhysicsVolumeClass",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "PhysicsCollisionHandlerClass",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "DefaultGameMode",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "GameNetworkManagerClass",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "PackedLightAndShadowMapTextureSize",
+                "type": "IntProperty"
+              },
+              {
+                "name": "DefaultColorScale",
+                "type": "StructProperty"
+              },
+              {
+                "name": "DefaultMaxDistanceFieldOcclusionDistance",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "GlobalDistanceFieldViewDistance",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "DynamicIndirectShadowsSelfShadowingIntensity",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "VolumetricLightmapLoadingRange",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "NaniteSettings",
+                "type": "StructProperty"
+              },
+              {
+                "name": "DefaultReverbSettings",
+                "type": "StructProperty"
+              },
+              {
+                "name": "DefaultAmbientZoneSettings",
+                "type": "StructProperty"
+              },
+              {
+                "name": "DefaultBaseSoundMix",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "TimeDilation",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "CinematicTimeDilation",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "DemoPlayTimeDilation",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MinGlobalTimeDilation",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MaxGlobalTimeDilation",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MinCinematicTimeDilation",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MaxCinematicTimeDilation",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MinUndilatedFrameTime",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MaxUndilatedFrameTime",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "BroadphaseSettings",
+                "type": "StructProperty"
+              },
+              {
+                "name": "ReplicationViewers",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "AssetUserData",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "PauserPlayerState",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "MaxNumberOfBookmarks",
+                "type": "IntProperty"
+              },
+              {
+                "name": "DefaultBookmarkClass",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "BookmarkArray",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "LastBookmarkClass",
+                "type": "ClassProperty"
+              }
+            ]
+          },
+          {
+            "class_path": "/Game/Blueprints/GameModes/PC_Replay.PC_Replay_C",
+            "dumper_class": null,
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 0,
+            "fields": []
+          }
+        ],
+        "16": [
+          {
+            "class_path": "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C",
+            "dumper_class": null,
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 0,
+            "fields": []
+          },
+          {
+            "class_path": "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C",
+            "dumper_class": null,
+            "first_field": "bHidden",
+            "order_anchor_verified": null,
+            "dumper_field_count": 0,
+            "fields": []
+          }
+        ],
+        "21": [
+          {
+            "class_path": "/Game/Blueprints/Actors/BP_CaptureZone.BP_CaptureZone_C",
+            "dumper_class": "Tyr.TyrCaptureZone",
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 14,
+            "fields": [
+              {
+                "name": "Zone",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "CollisionComp",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "MinimapIconComponent",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "CapturePoints",
+                "type": "IntProperty"
+              },
+              {
+                "name": "CaptureUnitCap",
+                "type": "IntProperty"
+              },
+              {
+                "name": "CapturePointsPerSecond",
+                "type": "IntProperty"
+              },
+              {
+                "name": "CaptureReductionPerSecond",
+                "type": "IntProperty"
+              },
+              {
+                "name": "CaptureMaxTotal",
+                "type": "IntProperty"
+              },
+              {
+                "name": "CappingAllies",
+                "type": "SetProperty"
+              },
+              {
+                "name": "CappingEnemies",
+                "type": "SetProperty"
+              },
+              {
+                "name": "PubTeamID",
+                "type": "IntProperty"
+              },
+              {
+                "name": "NumAllies",
+                "type": "IntProperty"
+              },
+              {
+                "name": "NumEnemies",
+                "type": "IntProperty"
+              },
+              {
+                "name": "bIsPointCaptured",
+                "type": "BoolProperty"
+              }
+            ]
+          },
+          {
+            "class_path": "/Game/Blueprints/Capturables/BP_HealZone.BP_HealZone_C",
+            "dumper_class": null,
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 0,
+            "fields": []
+          },
+          {
+            "class_path": "/Script/Engine.StaticMeshComponent",
+            "dumper_class": "Engine.StaticMeshComponent",
+            "first_field": "AttachParent",
+            "order_anchor_verified": false,
+            "dumper_field_count": 42,
+            "fields": [
+              {
+                "name": "ForcedLodModel",
+                "type": "IntProperty"
+              },
+              {
+                "name": "MinLOD",
+                "type": "IntProperty"
+              },
+              {
+                "name": "SubDivisionStepSize",
+                "type": "IntProperty"
+              },
+              {
+                "name": "WireframeColorOverride",
+                "type": "StructProperty"
+              },
+              {
+                "name": "StaticMesh",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "WorldPositionOffsetDisableDistance",
+                "type": "IntProperty"
+              },
+              {
+                "name": "bForceNaniteForMasked",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bDisallowNanite",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bForceDisableNanite",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEvaluateWorldPositionOffset",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bWorldPositionOffsetWritesVelocity",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEvaluateWorldPositionOffsetInRayTracing",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideWireframeColor",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideMinLOD",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideNavigationExport",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bForceNavigationObstacle",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bDisallowMeshPaintPerInstance",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bIgnoreInstanceForTextureStreaming",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideLightMapRes",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bCastDistanceFieldIndirectShadow",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideDistanceFieldSelfShadowBias",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bUseSubDivisions",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bUseDefaultCollision",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bSortTriangles",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bReverseCulling",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEnableVertexColorMeshPainting",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bEnableTextureColorMeshPainting",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideMeshPaintTextureCoordinateIndex",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOverrideMeshPaintTextureResolution",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "OverriddenMeshPaintTextureCoordinateIndex",
+                "type": "IntProperty"
+              },
+              {
+                "name": "OverriddenMeshPaintTextureResolution",
+                "type": "IntProperty"
+              },
+              {
+                "name": "OverriddenLightMapRes",
+                "type": "IntProperty"
+              },
+              {
+                "name": "MeshPaintTextureCooked",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "MeshPaintTextureOverride",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "MaterialCacheTexture",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "DistanceFieldIndirectShadowMinVisibility",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "DistanceFieldSelfShadowBias",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "StreamingDistanceMultiplier",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "NanitePixelProgrammableDistance",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "LODData",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "StreamingTextureData",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "LightmassSettings",
+                "type": "StructProperty"
+              }
+            ]
+          },
+          {
+            "class_path": "/Game/Blueprints/Capturables/BP_AmmunitionZone.BP_AmmunitionZone_C",
+            "dumper_class": null,
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 0,
+            "fields": []
+          },
+          {
+            "class_path": "/Game/Blueprints/Capturables/BP_AbilityResourceZone.BP_AbilityResourceZone_C",
+            "dumper_class": null,
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 0,
+            "fields": []
+          }
+        ],
+        "34": [
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_LobbyPlayerRecord.BP_LobbyPlayerRecord_C",
+            "dumper_class": "Engine.Player",
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 4,
+            "fields": [
+              {
+                "name": "PlayerController",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "CurrentNetSpeed",
+                "type": "IntProperty"
+              },
+              {
+                "name": "ConfiguredInternetSpeed",
+                "type": "IntProperty"
+              },
+              {
+                "name": "ConfiguredLanSpeed",
+                "type": "IntProperty"
+              }
+            ]
+          }
+        ],
+        "1947": [
+          {
+            "class_path": "NetworkGameplayTagNodeIndex",
+            "dumper_class": null,
+            "first_field": "Gameplay.Vehicle.CanOpener",
+            "order_anchor_verified": null,
+            "dumper_field_count": 0,
+            "fields": []
+          }
+        ],
+        "83": [
+          {
+            "class_path": "/Script/Tyr.TyrAbilitySystemComponent",
+            "dumper_class": "GameplayAbilities.AbilitySystemComponent",
+            "first_field": "PredictionKey",
+            "order_anchor_verified": false,
+            "dumper_field_count": 27,
+            "fields": [
+              {
+                "name": "DefaultStartingData",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "AffectedAnimInstanceTag",
+                "type": "NameProperty"
+              },
+              {
+                "name": "OutgoingDuration",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "IncomingDuration",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "ClientDebugStrings",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "ServerDebugStrings",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "UserAbilityActivationInhibited",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "ReplicationProxyEnabled",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bSuppressGrantAbility",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bSuppressGameplayCues",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "SpawnedTargetActors",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "OwnerActor",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "AvatarActor",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "ActivatableAbilities",
+                "type": "StructProperty"
+              },
+              {
+                "name": "AllReplicatedInstancedAbilities",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "RepAnimMontageInfo",
+                "type": "StructProperty"
+              },
+              {
+                "name": "bCachedIsNetSimulated",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bPendingMontageRep",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "LocalAnimMontageInfo",
+                "type": "StructProperty"
+              },
+              {
+                "name": "ActiveGameplayEffects",
+                "type": "StructProperty"
+              },
+              {
+                "name": "ActiveGameplayCues",
+                "type": "StructProperty"
+              },
+              {
+                "name": "MinimalReplicationGameplayCues",
+                "type": "StructProperty"
+              },
+              {
+                "name": "BlockedAbilityBindings",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "MinimalReplicationTags",
+                "type": "StructProperty"
+              },
+              {
+                "name": "SpawnedAttributes",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "ReplicatedLooseTags",
+                "type": "StructProperty"
+              },
+              {
+                "name": "ReplicatedPredictionKeyMap",
+                "type": "StructProperty"
+              }
+            ]
+          }
+        ],
+        "43": [
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_TyrGameState.BP_TyrGameState_C",
+            "dumper_class": "Tyr.TyrGameStateBase",
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 24,
+            "fields": [
+              {
+                "name": "MaxSpottingTime",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MaxBushSpottingTime",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MaxCamoValue",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "GunFireCamoAddition",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "GunFireCamoScalar",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "PlayerRecordClass",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "RecordArray",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "TeamWithLastStandId",
+                "type": "IntProperty"
+              },
+              {
+                "name": "Gamemodetag",
+                "type": "StructProperty"
+              },
+              {
+                "name": "ServerFPS",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "ServerDeltaTime",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "CurrentMatchPhase",
+                "type": "EnumProperty"
+              },
+              {
+                "name": "CurrentPhaseTimeRemaining",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "IntroSequenceDataAsset",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "DefaultIntroSequenceDuration",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "DefaultPreMatchCountdownDuration",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "MatchConnectionState",
+                "type": "EnumProperty"
+              },
+              {
+                "name": "bCreatedViaMatchmaking",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "Matchdetailsid",
+                "type": "StrProperty"
+              },
+              {
+                "name": "bOnlyMaxLevelVehicles",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bAllowAlphaVehicles",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bIsJoinCodeHidden",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "Viewmodels",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "InstancedViewModels",
+                "type": "MapProperty"
+              }
+            ]
+          }
+        ],
+        "64": [
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_TyrLobbyPlayerState.BP_TyrLobbyPlayerState_C",
+            "dumper_class": "Engine.PlayerState",
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 15,
+            "fields": [
+              {
+                "name": "Score",
+                "type": "FloatProperty"
+              },
+              {
+                "name": "PlayerId",
+                "type": "IntProperty"
+              },
+              {
+                "name": "CompressedPing",
+                "type": "ByteProperty"
+              },
+              {
+                "name": "bShouldUpdateReplicatedPing",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bIsSpectator",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bOnlySpectator",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bIsABot",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bIsInactive",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "bFromPreviousLevel",
+                "type": "BoolProperty"
+              },
+              {
+                "name": "StartTime",
+                "type": "IntProperty"
+              },
+              {
+                "name": "UniqueID",
+                "type": "StructProperty"
+              },
+              {
+                "name": "EngineMessageClass",
+                "type": "ClassProperty"
+              },
+              {
+                "name": "SavedNetworkAddress",
+                "type": "StrProperty"
+              },
+              {
+                "name": "PawnPrivate",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "PlayerNamePrivate",
+                "type": "StrProperty"
+              }
+            ]
+          },
+          {
+            "class_path": "/Game/Blueprints/GameModes/BP_TyrPlayerState.BP_TyrPlayerState_C",
+            "dumper_class": "Tyr.TyrPlayerStateBase",
+            "first_field": "hardcoded#216",
+            "order_anchor_verified": null,
+            "dumper_field_count": 26,
+            "fields": [
+              {
+                "name": "AbilitySystemComponent",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "PartyId",
+                "type": "StrProperty"
+              },
+              {
+                "name": "VehicleTag",
+                "type": "StructProperty"
+              },
+              {
+                "name": "AmmunitionTagContainer",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "KillerRef",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "KillerDeathVFXTag",
+                "type": "StructProperty"
+              },
+              {
+                "name": "MapGuid",
+                "type": "StructProperty"
+              },
+              {
+                "name": "HealthComponent",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "PlayerRecord",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "AbilityResourceAttribute",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "DamageAttribute",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "VehicleStatsAttribute",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "ModulesAttribute",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "AdditionalAttributeSet",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "CosmeticStyle",
+                "type": "StructProperty"
+              },
+              {
+                "name": "LastAppliedCosmeticStyle",
+                "type": "StructProperty"
+              },
+              {
+                "name": "TechTreeDataTable",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "ComponentDataTable",
+                "type": "ObjectProperty"
+              },
+              {
+                "name": "MyTeamID",
+                "type": "StructProperty"
+              },
+              {
+                "name": "StatTags",
+                "type": "StructProperty"
+              },
+              {
+                "name": "CombatDataLog",
+                "type": "StructProperty"
+              },
+              {
+                "name": "FireSolveSalt",
+                "type": "UInt32Property"
+              },
+              {
+                "name": "Viewmodels",
+                "type": "ArrayProperty"
+              },
+              {
+                "name": "ValidVehicles",
+                "type": "StructProperty"
+              },
+              {
+                "name": "CurrentVehicleLoadout",
+                "type": "StructProperty"
+              },
+              {
+                "name": "bIsSpectatingBothTeams",
+                "type": "BoolProperty"
+              }
+            ]
+          }
+        ]
+      },
+      "field_label_summary": {
+        "classes_mapped": 15,
+        "order_anchor_verified": 0,
+        "order_anchor_differs": 2,
+        "order_anchor_unresolved_hardcoded": 13,
+        "note": "Dumper declaration order != Iris changemask bit order in this dataset; field NAMES are available as a candidate set but bit->name ORDER is not yet proven for any class (blocked on Checkpoint NetExport / exe FName table)."
+      }
+    }
+  ],
+  "global_blockers": {
+    "player_usernames": {
+      "status": "BLOCKED",
+      "reason": "PlayerName is not plaintext in the live stream; it is StringTokenStore-encoded. Decoder only catches small cm34 DELTA updates (never the creation that carries PlayerName). Raw FString scan across all packet bytes found 0 hits; 291 ASCII fragments are string-table entries, not names."
+    },
+    "labeled_fields_bit_to_name": {
+      "status": "BLOCKED",
+      "reason": "Replay bit-0 != Dumper[0] for all 67 native classes (0 matches). Dumper gives the field SET (names+types) but not the wire bit ORDER. Authoritative order lives in the replay own FNetFieldExport / Checkpoint NetExport stream or the shipping exe hardcoded FName table (#216 -> name), neither yet decoded."
+    },
+    "typed_value_decode": {
+      "status": "PARTIAL",
+      "reason": "Only raw 32-bit words recovered (float32 + int32 views). Per-type NetSerializer decode (vectors, gameplay tags, structs) not implemented; value interpretation beyond \"float or int\" is not done."
+    },
+    "read_objects_pending_destroy": {
+      "status": "DISABLED",
+      "reason": "Left disabled: enabling it misread the destroy-count and consumed the stream. Per-packet isolation keeps framing stable without it. Known gap; revisit only if object counts come up short."
+    },
+    "worldsettings_worldgravityz": {
+      "status": "DROPPED",
+      "reason": "Static level actor; creation ref written INVALID in these replays so the class cannot be recovered from the creation header."
+    }
+  },
+  "capability_summary": {
+    "can": [
+      "End-to-end decode of every replay (per-packet Iris, class resolution via archetype handle).",
+      "Changemask bit-width (cm_size) + class PATH for every replicated class (106-314 groups/file).",
+      "Raw per-object replicated state: for each object with a dirty changemask, recover 32-bit words as float32 AND int32.",
+      "Archetype handle -> class path mapping for dynamic actors (e.g. cm16 Map, cm34 BP_LobbyPlayerRecord).",
+      "Dumper-driven field-name SETS per class (names + types) as candidate label tables."
+    ],
+    "cannot_yet": [
+      "Player usernames (StringTokenStore-encoded).",
+      "Labeled stats: bit N -> field name (order unproven; 0/67 native classes match at bit-0).",
+      "Typed value decode beyond raw 32-bit words (vectors/tags/structs need NetSerializers).",
+      "WorldSettings/WorldGravityZ (static actor, invalid creation ref).",
+      "ReadObjectsPendingDestroy (disabled)."
+    ]
+  }
+}

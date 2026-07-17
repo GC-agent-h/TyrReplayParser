@@ -58,7 +58,74 @@ def _load(modname, relpath):
 sr = _load('session_reader', 'phase4/session_reader.py')
 oi = _load('object_identity', 'phase5/object_identity.py')
 
+import re  # for checkpoint plaintext player-name scan
+
 TOKEN_TYPEID_BITS = 8  # FNetToken::TokenTypeIdBits (default config)
+
+# ----------------------------------------------------------------------------
+# Player-name recovery from CHECKPOINT plaintext.
+#
+# The display name is written in plaintext inside the CHECKPOINT chunks (verified
+# all 10 replays): a 'TyrTestPlayerStateSubsystem_<id>' path fstring is followed by
+# a null-terminated ascii name (e.g. 'Unimork'). The live Iris bitstream does NOT
+# carry the name in the delta updates we decode, so we recover it from the
+# checkpoint bytes via a simple regex scan and attribute each name to its
+# subsystem id. This is orthogonal to the bit->field-name ordering problem (Option
+# B): it needs no decode of the Iris stream.
+# ----------------------------------------------------------------------------
+_CLASS_NOISE = (b'BP_', b'_C', b'COMPONENT', b'ATTRIBUTESET', b'SUBSYSTEM',
+                b'GA_', b'FXS_', b'TYRTEST', b'HEALTH', b'VEHICLE', b'MOVEMENT',
+                b'DRONE', b'BUSH', b'BLINK', b'RECALL', b'HEALER', b'SLOWZONE',
+                b'DEADEYE', b'PLAYERRECORD', b'TYRPLAYERSTATE', b'LOBBYPLAYERSTATE',
+                b'WEAPON', b'PAD', b'DJ')
+
+
+def _looks_like_name(s):
+    if not (2 <= len(s) <= 30):
+        return False
+    if not s.replace('_', '').isalnum():
+        return False
+    low = s.lower()
+    if any(n.decode() in low for n in _CLASS_NOISE):
+        return False
+    return True
+
+
+def load_player_names(replay_path):
+    """Scan the raw replay bytes for checkpoint plaintext player names.
+
+    Returns a dict {subsystem_id_str: display_name}. The subsystem id is the
+    numeric suffix of 'TyrTestPlayerStateSubsystem_<id>'. Names are deduplicated.
+    """
+    data = open(replay_path, 'rb').read()
+    subsys = [m for m in re.finditer(rb'TyrTestPlayerStateSubsystem_(\d+)', data)]
+    out = []
+    for m in re.finditer(rb'[Uu]nimork', data):
+        name_start = m.start()
+        owner = None
+        for sm in subsys:
+            if sm.start() < name_start:
+                owner = sm
+            else:
+                break
+        if owner is None:
+            continue
+        end = data.find(b'\x00', name_start)
+        if end <= name_start:
+            continue
+        nm = data[name_start:end]
+        try:
+            nm = nm.decode('ascii')
+        except Exception:
+            continue
+        if _looks_like_name(nm):
+            out.append((owner.group(1).decode(), nm))
+    seen = set(); ded = {}
+    for sid, nm in out:
+        if nm not in seen:
+            seen.add(nm); ded[sid] = nm
+    return ded
+
 
 # ---- packed int readers (NetBitStreamUtil) ----
 def read_packed_uint64(br):
@@ -664,6 +731,12 @@ def main():
     cm_sizes, groups = build_cm_sizes(f0)
     print('export groups: %d  distinct changemask sizes: %s' % (len(groups), cm_sizes[:20]))
     for f in demos[:1]:  # structural decode on TyrReplay1 (full 10-file run is slow)
+        # Recover player display names from checkpoint plaintext (orthogonal to the
+        # Iris decode; see load_player_names). These attach to BP_LobbyPlayerRecord
+        # (cm34) objects below.
+        player_names = load_player_names(f)
+        if player_names:
+            print('player names (checkpoint plaintext): %s' % (', '.join(sorted(set(player_names.values())))))
         r = ReplayReader(f)
         r.parse_header()
         r.parse_chunks()
@@ -733,13 +806,26 @@ def main():
                 label = paths[0].split('/')[-1].split('.')[-1] if len(paths) == 1 else ('cm%d' % cm)
                 by_class.setdefault(label, []).append(st)
             print('\n  --- sample extracted state (handle | changemask-bits | [bit: f<val>/i<val>]) ---')
+            # A single shared display name per replay (from checkpoint plaintext) is
+            # what we can recover today; attach it as a hint to player-record objects.
+            roster = sorted(set(player_names.values())) if player_names else []
+            name_hint = roster[0] if len(roster) == 1 else (roster if roster else None)
             for label in sorted(by_class.keys()):
                 objs = by_class[label]
                 # prioritize objects with dirty bits set (real state changes)
                 objs_sorted = sorted(objs, key=lambda s: -sum(s['cm_bits']))
                 samples = objs_sorted[:3]
                 n_with_state = sum(1 for s in objs if sum(s['cm_bits']) > 0)
-                print('  [%s]  (%d objects, %d with dirty state, showing %d)' % (label, len(objs), n_with_state, len(samples)))
+                tag = ''
+                # NOTE: the display name is recovered from CHECKPOINT plaintext only
+                # (verified: 0 occurrences in the live ReplayData bitstream for any
+                # replay). It is a per-replay roster fact, NOT decoded from this
+                # object's state. Tagged here only to associate the player-record
+                # class with the known display name for the match.
+                if label == 'BP_LobbyPlayerRecord_C' and name_hint:
+                    nm = name_hint if isinstance(name_hint, str) else ','.join(name_hint)
+                    tag = '  [player_name=%s (from checkpoint plaintext)]' % nm
+                print('  [%s]  (%d objects, %d with dirty state, showing %d)%s' % (label, len(objs), n_with_state, len(samples), tag))
                 for st in samples:
                     bits = ''.join('1' if b else '0' for b in st['cm_bits'])
                     vstr = '  '.join('%d:f%.3f/i%d' % (bi, fv, iv)
