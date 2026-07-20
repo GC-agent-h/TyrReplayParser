@@ -137,13 +137,28 @@ result['phases']['phase5_field_schema'] = {
     'classes': schema,
 }
 
+# ---- Phase: best-effort labeled fields (option c) ----
+sys.path.insert(0, 'phase7')
+import label_fields as lf_mod
+dumper = lf_mod.parse_dumper()
+cbm = result['phases']['phase5_class_inventory']['class_by_cm']
+labeled = {'verified': False, 'note': 'positional hypothesis: bit i ~= Dumper property i (UNVERIFIED)', 'classes': []}
+for cm_key in ('1', '12', '83'):
+    names = cbm.get(cm_key, [])
+    if not names:
+        labeled['classes'].append({'cm': cm_key, 'note': 'class not recovered'})
+        continue
+    for cn in names:
+        labeled['classes'].append(lf_mod.label_class(cm_key, cn, dumper))
+result['phases']['phase_labeled_fields'] = labeled
+
 # ---- write ----
 os.makedirs(OUT_DIR, exist_ok=True)
 out_path = os.path.join(OUT_DIR, os.path.splitext(os.path.basename(F))[0] + '.json')
 with open(out_path, 'w') as f:
     json.dump(result, f, indent=2)
 print('wrote', os.path.abspath(out_path))
-print('replay=%s frames=%d packets=%d objects=%d players=%s subsystems=%d schema_classes=%d' % (
+print('replay=%s frames=%d packets=%d objects=%d players=%s subsystems=%d schema_classes=%d labeled=%d' % (
     result['replay'], len(frames), len(packets), len(objs),
     result['phases']['username_checkpoint_plaintext']['players'], len(subsystem_blocks),
-    len(schema)))
+    len(schema), len(labeled['classes'])))
