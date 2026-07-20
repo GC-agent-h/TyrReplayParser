@@ -152,6 +152,21 @@ for cm_key in ('1', '12', '83'):
         labeled['classes'].append(lf_mod.label_class(cm_key, cn, dumper))
 result['phases']['phase_labeled_fields'] = labeled
 
+# ---- Phase: authoritative bit->name field table (engine-format export parse) ----
+# Reverse-engineered from UPackageMapClient::AppendNetFieldExports
+# (PackageMapClient.cpp:1737) + FNetFieldExport::operator<< (:4310) +
+# StaticSerializeName (CoreNet.cpp:299). Flat per-field export list; grouped by
+# NeedsExport=1 boundaries. Resolves hardcoded EName indices via UnrealNames.inl.
+import parse_export_full as pef_mod
+groups, pef_err, pef_params = pef_mod.parse_export_groups(F)
+result['phases']['phase_export_field_table'] = {
+    'parse_error': pef_err,
+    'group_count': len(groups),
+    'groups': [{'path': g['path'].rstrip('\x00'), 'pni': g['pni'], 'nec': g['nec'],
+                'fields': [f.rstrip('\x00') if isinstance(f, str) else f for f in g['fields']]}
+               for g in groups],
+}
+
 # ---- write ----
 os.makedirs(OUT_DIR, exist_ok=True)
 out_path = os.path.join(OUT_DIR, os.path.splitext(os.path.basename(F))[0] + '.json')

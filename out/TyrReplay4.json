@@ -1444,6 +1444,315 @@
           "note": "positional hypothesis: bit i ~= Dumper property i"
         }
       ]
+    },
+    "phase_export_field_table": {
+      "parse_error": false,
+      "group_count": 24,
+      "groups": [
+        {
+          "path": "/Script/NetworkPrediction.NetworkPredictionReplicatedManager",
+          "pni": 1,
+          "nec": 19,
+          "fields": [
+            "RemoteRole",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Script/Engine.WorldSettings",
+          "pni": 2,
+          "nec": 22,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "WorldGravityZ"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Actors/BP_CaptureZone.BP_CaptureZone_C",
+          "pni": 3,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C",
+          "pni": 5,
+          "nec": 16,
+          "fields": [
+            "bHidden",
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_LobbyPlayerRecord.BP_LobbyPlayerRecord_C",
+          "pni": 6,
+          "nec": 34,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "PlayerName",
+            "TeamId",
+            "AmmunitionTagContainer",
+            "AmmunitionTagContainer"
+          ]
+        },
+        {
+          "path": "NetworkGameplayTagNodeIndex",
+          "pni": 7,
+          "nec": 1947,
+          "fields": [
+            "Gameplay.Ammunition.Type.Silenced",
+            "Gameplay.Ammunition.Type.Momentum",
+            "Keystonetalenttag",
+            "Gameplay.TalentTree.Drone.Talent026",
+            "ConnectionState",
+            "VehicleTag",
+            "Gameplay.Vehicle.Vanguard",
+            "PlayerTitle",
+            "Services.Profiles.Titles.Clan",
+            "PlayerClan",
+            "Gameplay.TalentTree.Vanguard.Talent027",
+            "Gameplay.Vehicle.Bush",
+            "Gameplay.Ammunition.Type.Unstable",
+            "Services.Profiles.Titles.Commander",
+            "Gameplay.TalentTree.Bush.Talent026",
+            "Gameplay.Vehicle.Blink",
+            "Gameplay.Ammunition.Type.Mobility",
+            "Gameplay.TalentTree.Blink.Talent027",
+            "bIsOnlySpectator"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Capturables/BP_HealZone.BP_HealZone_C",
+          "pni": 9,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Script/Engine.StaticMeshComponent",
+          "pni": 10,
+          "nec": 21,
+          "fields": [
+            "AttachParent",
+            "AttachChildren",
+            "AttachChildren",
+            "bShouldBeAttached"
+          ]
+        },
+        {
+          "path": "/Script/Tyr.TyrAbilitySystemComponent",
+          "pni": 11,
+          "nec": 83,
+          "fields": [
+            "PredictionKey",
+            "OwnerActor",
+            "AvatarActor"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Capturables/BP_AbilityResourceZone.BP_AbilityResourceZone_C",
+          "pni": 13,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Capturables/BP_AmmunitionZone.BP_AmmunitionZone_C",
+          "pni": 14,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_TyrGameState.BP_TyrGameState_C",
+          "pni": 15,
+          "nec": 43,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "GameModeClass",
+            "SpectatorClass",
+            "bReplicatedHasBegunPlay",
+            "ReplicatedWorldTimeSecondsDouble",
+            "MaxSpottingTime",
+            "MaxCamoValue",
+            "GunFireCamoAddition",
+            "GunFireCamoScalar",
+            "Gamemodetag",
+            "Gameplay.Mode.Custom",
+            "CurrentMatchPhase",
+            "CurrentPhaseTimeRemaining",
+            "Matchdetailsid",
+            "bAllowAlphaVehicles"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_TyrLobbyPlayerState.BP_TyrLobbyPlayerState_C",
+          "pni": 16,
+          "nec": 64,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "PlayerId",
+            "CompressedPing",
+            "bFromPreviousLevel",
+            "StartTime",
+            "UniqueID",
+            "PlayerNamePrivate",
+            "VehicleTag",
+            "AmmunitionTagContainer",
+            "AmmunitionTagContainer",
+            "Gameplay.Ammunition.Type.HighAccuracy",
+            "PlayerRecord",
+            "TeamId",
+            "bIsReady",
+            "Gameplay.Ammunition.Type.HighExplosive",
+            "bIsSpectator",
+            "bOnlySpectator"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_TyrPlayerState.BP_TyrPlayerState_C",
+          "pni": 19,
+          "nec": 64,
+          "fields": [
+            "RemoteRole",
+            "Owner",
+            "Role",
+            "bOnlySpectator",
+            "StartTime",
+            "SpawnedAttributes",
+            "SpawnedAttributes"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/PC_Replay.PC_Replay_C",
+          "pni": 24,
+          "nec": 22,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "PlayerState",
+            "SpawnLocation"
+          ]
+        },
+        {
+          "path": "/Script/Tyr.TyrTeamPublicInfo",
+          "pni": 25,
+          "nec": 23,
+          "fields": [
+            "RemoteRole",
+            "Owner",
+            "Role",
+            "TeamId",
+            "CurrentTeamHealth",
+            "MaxTeamHealth",
+            "Tag",
+            "Gameplay.Score.PlayerCount",
+            "StackCount"
+          ]
+        },
+        {
+          "path": "/Script/Tyr.TyrTeamPublicInfo_ClassNetCache",
+          "pni": 26,
+          "nec": 1,
+          "fields": [
+            "TeamTags"
+          ]
+        },
+        {
+          "path": "/TyrVehicleRecall/Blueprints/BP_Recall.BP_Recall_C",
+          "pni": 27,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role",
+            "Instigator",
+            "TeamId"
+          ]
+        },
+        {
+          "path": "/Script/PsRealVehiclePlugin.PrvVehicleMovementComponent",
+          "pni": 28,
+          "nec": 12,
+          "fields": [
+            "bIsActive"
+          ]
+        },
+        {
+          "path": "/Script/Tyr.TyrMiniMapComponent",
+          "pni": 4,
+          "nec": 7,
+          "fields": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "path": "/Script/Tyr.TyrAmmunitionComponent",
+          "pni": 31,
+          "nec": 16,
+          "fields": [
+            "NextAmmunitionSlot",
+            "Gameplay.Ammunition.Count.Slot1",
+            "AmmunitionTypeTags",
+            "AmmunitionTypeTags",
+            "Gameplay.Ammunition.Type.Standard",
+            "CurrentClipSize",
+            "Tag",
+            "StackCount",
+            "Gameplay.Ammunition.Count.Slot2"
+          ]
+        },
+        {
+          "path": "/Script/Tyr.TyrAmmunitionComponent_ClassNetCache",
+          "pni": 32,
+          "nec": 1,
+          "fields": [
+            "AmmunitionStackCountTags"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Components/BPC_TurretBaseComponent.BPC_TurretBaseComponent_C",
+          "pni": 33,
+          "nec": 8,
+          "fields": [
+            "YawQuantized",
+            "PitchQuantized"
+          ]
+        },
+        {
+          "path": "/TyrVehicleStealth/Blueprints/BP_Stealth.BP_Stealth_C",
+          "pni": 37,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role",
+            "Instigator",
+            "TeamId",
+            "EffectiveSteeringAngularSpeed"
+          ]
+        }
+      ]
     }
   }
 }
