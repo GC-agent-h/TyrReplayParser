@@ -13,7 +13,7 @@ import frame_parser as fp
 import state_decoder as sd
 from replay_reader import CHUNK_TYPES
 
-F = 'Demos/TyrReplay4.replay'
+F = sys.argv[1] if len(sys.argv) > 1 else 'Demos/TyrReplay4.replay'
 OUT_DIR = 'out'
 
 result = {'replay': os.path.basename(F), 'phases': {}}
@@ -165,6 +165,19 @@ result['phases']['phase_export_field_table'] = {
     'groups': [{'path': g['path'].rstrip('\x00'), 'pni': g['pni'], 'nec': g['nec'],
                 'fields': [f.rstrip('\x00') if isinstance(f, str) else f for f in g['fields']]}
                for g in groups],
+}
+
+# ---- Phase: BP_TyrPlayerState isolation + naming (Step 2.1) ----
+# Monkeypatches phase6 to force-capture cm64 objects; names every dirty bit via
+# the export table. Object isolation + bit naming are reliable; per-field VALUES
+# need type/size from the binary checkpoint descriptor (see decode_player_stats.py).
+import decode_player_stats as dps_mod
+dps = dps_mod.decode_player_stats(F)
+result['phases']['phase_player_stats'] = {
+    'bp_tyrplayerstate_objects': dps['bp_tyrplayerstate_objects'],
+    'distinct_player_handles': dps['distinct_player_handles'],
+    'fields_64': dps['fields_64'],
+    'value_typing': 'UNVERIFIED - positional 32-bit words; needs checkpoint FReplicationStateDescriptor',
 }
 
 # ---- write ----

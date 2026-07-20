@@ -1,0 +1,716 @@
+{
+  "replay": "TyrReplay1.replay",
+  "phases": {
+    "phase1_container": {
+      "file_version": 7,
+      "chunk_count": 37,
+      "chunk_types": {
+        "Header": 2,
+        "Unknown": 1,
+        "ReplayData": 23,
+        "Checkpoint": 11
+      }
+    },
+    "phase2_decompression": {
+      "methods": {
+        "Header": 2,
+        "ReplayData": 23,
+        "Checkpoint": 11
+      }
+    },
+    "phase3_frames": {
+      "replaydata_frames": 3781,
+      "tile_ok": true,
+      "total_packets": 3842
+    },
+    "phase5_class_inventory": {
+      "export_groups": 106,
+      "distinct_cm_sizes": [
+        16,
+        21,
+        22,
+        34,
+        43,
+        64,
+        83,
+        1947
+      ],
+      "class_by_cm": {
+        "16": [
+          "Map_Dunes_Rework_C",
+          "BP_BasicSpawnWall_C"
+        ],
+        "21": [
+          "BP_CaptureZone_C",
+          "BP_HealZone_C",
+          "StaticMeshComponent",
+          "BP_AmmunitionZone_C",
+          "BP_AbilityResourceZone_C"
+        ],
+        "22": [
+          "WorldSettings",
+          "PC_Replay_C"
+        ],
+        "34": [
+          "BP_LobbyPlayerRecord_C"
+        ],
+        "43": [
+          "BP_TyrGameState_C"
+        ],
+        "64": [
+          "BP_TyrLobbyPlayerState_C",
+          "BP_TyrPlayerState_C"
+        ],
+        "83": [
+          "TyrAbilitySystemComponent"
+        ],
+        "1947": [
+          "NetworkGameplayTagNodeIndex"
+        ]
+      }
+    },
+    "phase6_iris_decode": {
+      "reads": 3538,
+      "skipped": 2033,
+      "objects_captured": 32,
+      "mode_counts": {
+        "strict": 1,
+        "agnostic": 31
+      },
+      "top_classes_by_object_count": [
+        [
+          "cm16",
+          30
+        ],
+        [
+          "arch40865491179282411",
+          1
+        ],
+        [
+          "arch13782141912859279616",
+          1
+        ]
+      ],
+      "archetype_to_class": [
+        {
+          "archetype_handle": "13782141912859279616",
+          "cm_size": 16,
+          "class": "Map_Dunes_Rework_C"
+        },
+        {
+          "archetype_handle": "40865491179282411",
+          "cm_size": 16,
+          "class": "Map_Dunes_Rework_C"
+        }
+      ],
+      "per_class_state": {
+        "Map_Dunes_Rework_C": {
+          "objects": 32,
+          "dirty_objects": 5,
+          "samples": [
+            {
+              "handle": 215864094913,
+              "cm_size": 16,
+              "changemask": "1111111111111111",
+              "values": [
+                {
+                  "bit": 0,
+                  "float": -1.8738712072372437,
+                  "int": -1074799869
+                },
+                {
+                  "bit": 1,
+                  "float": -1.2981050358657317e+26,
+                  "int": -355024669
+                },
+                {
+                  "bit": 2,
+                  "float": -1.3637592388704434e-08,
+                  "int": -1301656892
+                },
+                {
+                  "bit": 3,
+                  "float": 37865274736640.0,
+                  "int": 1443479753
+                },
+                {
+                  "bit": 4,
+                  "float": -1.669902129018579e-17,
+                  "int": -1550187149
+                },
+                {
+                  "bit": 5,
+                  "float": 2.6112733936961563e-12,
+                  "int": 741851269
+                },
+                {
+                  "bit": 6,
+                  "float": -2.152089186067426e+34,
+                  "int": -125525509
+                },
+                {
+                  "bit": 7,
+                  "float": 3.4015474064547056e+22,
+                  "int": 1692827505
+                },
+                {
+                  "bit": 8,
+                  "float": 6.078539978288147e+24,
+                  "int": 1755375050
+                },
+                {
+                  "bit": 9,
+                  "float": -2.9401312051351925e+29,
+                  "int": -261259139
+                },
+                {
+                  "bit": 10,
+                  "float": 1792.4066162109375,
+                  "int": 1155534083
+                },
+                {
+                  "bit": 11,
+                  "float": 4.1278329123309e-40,
+                  "int": 294572
+                },
+                {
+                  "bit": 12,
+                  "float": 2.949029909160572e-16,
+                  "int": 631898112
+                },
+                {
+                  "bit": 13,
+                  "float": 3.679865819255543e-40,
+                  "int": 262604
+                },
+                {
+                  "bit": 14,
+                  "float": 3.7670135498046875e-05,
+                  "int": 941490176
+                },
+                {
+                  "bit": 15,
+                  "float": 1.1024071070781909e-39,
+                  "int": 786704
+                }
+              ]
+            },
+            {
+              "handle": 984663271616,
+              "cm_size": 16,
+              "changemask": "0000010000000000",
+              "values": [
+                {
+                  "bit": 5,
+                  "float": -1.6741758728049606e-28,
+                  "int": -1856751075
+                }
+              ]
+            },
+            {
+              "handle": 2615265,
+              "cm_size": 16,
+              "changemask": "0001000000000000",
+              "values": [
+                {
+                  "bit": 3,
+                  "float": -30847459655680.0,
+                  "int": -706711073
+                }
+              ]
+            },
+            {
+              "handle": 0,
+              "cm_size": 16,
+              "changemask": "0010000000000000",
+              "values": [
+                {
+                  "bit": 2,
+                  "float": 103231455232.0,
+                  "int": 1371555992
+                }
+              ]
+            },
+            {
+              "handle": 119,
+              "cm_size": 16,
+              "changemask": "0001000000000000",
+              "values": [
+                {
+                  "bit": 3,
+                  "float": -185758832.0,
+                  "int": -852416697
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "username_checkpoint_plaintext": {
+      "players": [
+        "Unimork"
+      ],
+      "subsystem_ids": [
+        "2147338351"
+      ]
+    },
+    "player_subsystem_roster": {
+      "block_count": 21,
+      "blocks": [
+        {
+          "subsystem_id": "2147340058",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147341033",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147340823",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147340494",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147340435",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147340639",
+          "components": [
+            "HealthComponent"
+          ]
+        },
+        {
+          "subsystem_id": "2147340556",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338351",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338311",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338155",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338141",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338134",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338121",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338096",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338079",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338060",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147338033",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147337975",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147337957",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147337946",
+          "components": []
+        },
+        {
+          "subsystem_id": "2147337884",
+          "components": []
+        }
+      ]
+    },
+    "phase5_field_schema": {
+      "export_parse_error": false,
+      "classes": {
+        "/Script/Engine.WorldSettings": {
+          "cm_size": 22,
+          "bit0_field": "hardcoded#216",
+          "class_short": "WorldSettings"
+        },
+        "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C": {
+          "cm_size": 16,
+          "bit0_field": "hardcoded#216",
+          "class_short": "Map_Dunes_Rework_C"
+        },
+        "/Game/Blueprints/Actors/BP_CaptureZone.BP_CaptureZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_CaptureZone_C"
+        },
+        "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C": {
+          "cm_size": 16,
+          "bit0_field": "bHidden",
+          "class_short": "BP_BasicSpawnWall_C"
+        },
+        "/Game/Blueprints/GameModes/BP_LobbyPlayerRecord.BP_LobbyPlayerRecord_C": {
+          "cm_size": 34,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_LobbyPlayerRecord_C"
+        },
+        "NetworkGameplayTagNodeIndex": {
+          "cm_size": 1947,
+          "bit0_field": "Gameplay.Vehicle.CanOpener",
+          "class_short": "NetworkGameplayTagNodeIndex"
+        },
+        "/Game/Blueprints/Capturables/BP_HealZone.BP_HealZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_HealZone_C"
+        },
+        "/Script/Engine.StaticMeshComponent": {
+          "cm_size": 21,
+          "bit0_field": "AttachParent",
+          "class_short": "StaticMeshComponent"
+        },
+        "/Script/Tyr.TyrAbilitySystemComponent": {
+          "cm_size": 83,
+          "bit0_field": "PredictionKey",
+          "class_short": "TyrAbilitySystemComponent"
+        },
+        "/Game/Blueprints/Capturables/BP_AmmunitionZone.BP_AmmunitionZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_AmmunitionZone_C"
+        },
+        "/Game/Blueprints/Capturables/BP_AbilityResourceZone.BP_AbilityResourceZone_C": {
+          "cm_size": 21,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_AbilityResourceZone_C"
+        },
+        "/Game/Blueprints/GameModes/BP_TyrGameState.BP_TyrGameState_C": {
+          "cm_size": 43,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_TyrGameState_C"
+        },
+        "/Game/Blueprints/GameModes/BP_TyrLobbyPlayerState.BP_TyrLobbyPlayerState_C": {
+          "cm_size": 64,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_TyrLobbyPlayerState_C"
+        },
+        "/Game/Blueprints/GameModes/BP_TyrPlayerState.BP_TyrPlayerState_C": {
+          "cm_size": 64,
+          "bit0_field": "hardcoded#216",
+          "class_short": "BP_TyrPlayerState_C"
+        },
+        "/Game/Blueprints/GameModes/PC_Replay.PC_Replay_C": {
+          "cm_size": 22,
+          "bit0_field": "hardcoded#216",
+          "class_short": "PC_Replay_C"
+        }
+      }
+    },
+    "phase_labeled_fields": {
+      "verified": false,
+      "note": "positional hypothesis: bit i ~= Dumper property i (UNVERIFIED)",
+      "classes": [
+        {
+          "cm": "1",
+          "note": "class not recovered"
+        },
+        {
+          "cm": "12",
+          "note": "class not recovered"
+        },
+        {
+          "cm": "83",
+          "class": "TyrAbilitySystemComponent",
+          "field_count": 3,
+          "fields": [
+            [
+              0,
+              "CooldownListenerTags"
+            ],
+            [
+              1,
+              "GASDebuggerActor"
+            ],
+            [
+              2,
+              "CooldownInfos"
+            ]
+          ],
+          "verified": false,
+          "note": "positional hypothesis: bit i ~= Dumper property i"
+        }
+      ]
+    },
+    "phase_export_field_table": {
+      "parse_error": false,
+      "group_count": 15,
+      "groups": [
+        {
+          "path": "/Script/Engine.WorldSettings",
+          "pni": 1,
+          "nec": 22,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "WorldGravityZ"
+          ]
+        },
+        {
+          "path": "/TyrMapDunes/Maps/Map_Dunes_Rework.Map_Dunes_Rework_C",
+          "pni": 2,
+          "nec": 16,
+          "fields": [
+            "RemoteRole",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Actors/BP_CaptureZone.BP_CaptureZone_C",
+          "pni": 3,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Actors/BP_BasicSpawnWall.BP_BasicSpawnWall_C",
+          "pni": 5,
+          "nec": 16,
+          "fields": [
+            "bHidden",
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_LobbyPlayerRecord.BP_LobbyPlayerRecord_C",
+          "pni": 6,
+          "nec": 34,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "PlayerName",
+            "TeamId",
+            "VehicleTag"
+          ]
+        },
+        {
+          "path": "NetworkGameplayTagNodeIndex",
+          "pni": 7,
+          "nec": 1947,
+          "fields": [
+            "Gameplay.Vehicle.CanOpener",
+            "AmmunitionTagContainer",
+            "Keystonetalenttag",
+            "Gameplay.TalentTree.CanOpener.Talent027",
+            "ConnectionState",
+            "Gameplay.Vehicle.Recall",
+            "AmmunitionTagContainer",
+            "Gameplay.Ammunition.Type.Silenced",
+            "PlayerTitle",
+            "Services.Profiles.Titles.Clan",
+            "PlayerClan",
+            "Gameplay.TalentTree.Recall.Talent026",
+            "Gameplay.Vehicle.Bush",
+            "Gameplay.Ammunition.Type.Momentum",
+            "Gameplay.TalentTree.Bush.Talent026",
+            "Gameplay.Vehicle.Blink",
+            "Gameplay.Ammunition.Type.Mobility",
+            "Gameplay.TalentTree.Blink.Talent027",
+            "Gameplay.Vehicle.Ram",
+            "Gameplay.TalentTree.Ram.Talent026",
+            "Gameplay.Ammunition.Type.Gargantuan",
+            "Gameplay.TalentTree.Ram.Talent027",
+            "bIsLobbyOwner",
+            "Gameplay.Vehicle.Deadeye",
+            "Gameplay.Ammunition.Type.Unstable",
+            "Services.Profiles.Titles.Commander",
+            "Gameplay.TalentTree.Deadeye.Talent027",
+            "Gameplay.Vehicle.Stealth",
+            "Services.Profiles.Titles.EliteCommander",
+            "Gameplay.TalentTree.Stealth.Talent026"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Capturables/BP_HealZone.BP_HealZone_C",
+          "pni": 9,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Script/Engine.StaticMeshComponent",
+          "pni": 10,
+          "nec": 21,
+          "fields": [
+            "AttachParent",
+            "AttachChildren",
+            "AttachChildren",
+            "bShouldBeAttached"
+          ]
+        },
+        {
+          "path": "/Script/Tyr.TyrAbilitySystemComponent",
+          "pni": 11,
+          "nec": 83,
+          "fields": [
+            "PredictionKey",
+            "OwnerActor",
+            "AvatarActor"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Capturables/BP_AmmunitionZone.BP_AmmunitionZone_C",
+          "pni": 13,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/Capturables/BP_AbilityResourceZone.BP_AbilityResourceZone_C",
+          "pni": 14,
+          "nec": 21,
+          "fields": [
+            "RemoteRole",
+            "ReplicatedMovement",
+            "Role"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_TyrGameState.BP_TyrGameState_C",
+          "pni": 15,
+          "nec": 43,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "GameModeClass",
+            "SpectatorClass",
+            "bReplicatedHasBegunPlay",
+            "ReplicatedWorldTimeSecondsDouble",
+            "MaxSpottingTime",
+            "MaxCamoValue",
+            "GunFireCamoAddition",
+            "GunFireCamoScalar",
+            "Gamemodetag",
+            "Gameplay.Mode.Custom",
+            "CurrentMatchPhase",
+            "CurrentPhaseTimeRemaining",
+            "Matchdetailsid",
+            "bAllowAlphaVehicles"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_TyrLobbyPlayerState.BP_TyrLobbyPlayerState_C",
+          "pni": 16,
+          "nec": 64,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "PlayerId",
+            "CompressedPing",
+            "bFromPreviousLevel",
+            "StartTime",
+            "UniqueID",
+            "PlayerNamePrivate",
+            "VehicleTag",
+            "PlayerRecord",
+            "TeamId",
+            "bIsReady",
+            "AmmunitionTagContainer",
+            "AmmunitionTagContainer",
+            "Gameplay.Ammunition.Type.HighAccuracy",
+            "bIsSpectator",
+            "Gameplay.Ammunition.Type.HighExplosive"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/BP_TyrPlayerState.BP_TyrPlayerState_C",
+          "pni": 19,
+          "nec": 64,
+          "fields": [
+            "RemoteRole",
+            "Owner",
+            "Role",
+            "bOnlySpectator",
+            "StartTime",
+            "SpawnedAttributes",
+            "SpawnedAttributes"
+          ]
+        },
+        {
+          "path": "/Game/Blueprints/GameModes/PC_Replay.PC_Replay_C",
+          "pni": 24,
+          "nec": 22,
+          "fields": [
+            "RemoteRole",
+            "Role",
+            "PlayerState",
+            "SpawnLocation"
+          ]
+        }
+      ]
+    },
+    "phase_player_stats": {
+      "bp_tyrplayerstate_objects": 204,
+      "distinct_player_handles": 185,
+      "fields_64": [
+        "RemoteRole",
+        "Role",
+        "PlayerId",
+        "CompressedPing",
+        "bFromPreviousLevel",
+        "StartTime",
+        "UniqueID",
+        "PlayerNamePrivate",
+        "VehicleTag",
+        "PlayerRecord",
+        "TeamId",
+        "bIsReady",
+        "AmmunitionTagContainer",
+        "AmmunitionTagContainer",
+        "Gameplay.Ammunition.Type.HighAccuracy",
+        "bIsSpectator",
+        "Gameplay.Ammunition.Type.HighExplosive"
+      ],
+      "value_typing": "UNVERIFIED - positional 32-bit words; needs checkpoint FReplicationStateDescriptor"
+    }
+  }
+}
